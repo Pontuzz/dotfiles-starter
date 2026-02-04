@@ -1,0 +1,56 @@
+# Git Configuration Template
+# Copy this to ~/.gitconfig and fill in your user information
+#
+# DO NOT COMMIT the real ~/.gitconfig - it will be gitignored
+
+[user]
+    name = "Your Name"
+    email = "your.email@example.com"
+    # For work/personal split (optional):
+    # name = "Your Work Name"
+    # email = "work.email@company.com"
+
+[core]
+    editor = nano
+    # Or use: vim, nvim, emacs, etc.
+    excludesfile = ~/.gitignore_global
+    autocrlf = false
+    # Set to true only if working with Windows repos
+
+[init]
+    defaultBranch = master
+
+[push]
+    default = current
+    # Automatically push to branch with same name
+
+[pull]
+    rebase = false
+    # Or set to true if you prefer rebase on pull
+
+[merge]
+    tool = vimdiff
+    # Or: meld, kdiff3, tortoisemerge, etc.
+
+[diff]
+    # Show function names in diff hunks
+    algorithm = histogram
+    # Or: patience, minimal, etc.
+
+[log]
+    # Show commit date in log
+    date = iso
+
+[alias]
+    # Custom git shortcuts (optional)
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    visual = log --graph --oneline --all
+
+[safe]
+    # Add safe directories here (for shared systems)
+    # directory = /path/to/shared/repo

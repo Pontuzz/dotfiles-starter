@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+# Example of machine-specific and secret configuration
+# COPY THIS FILE TO: ~/.config/zsh/99-local.zsh
+# DO NOT COMMIT THE ACTUAL 99-local.zsh FILE - IT SHOULD BE GITIGNORED
+
+# ============================================================================
+# Plugin & Tool Management (Disable specific plugins/tools per machine)
+# ============================================================================
+# Remove plugins that don't work well on this machine
+# Example: plugins=(${plugins[@]/zsh-lsd})  # Remove zsh-lsd
+# Example: plugins=(${plugins[@]/fzf})      # Remove fzf
+# Uncomment as needed for your machine:
+
+# plugins=(${plugins[@]/zsh-lsd})
+
+# Disable specific tools by setting environment variables
+# Example: export THEFUCK_DISABLED="true"
+# Uncomment as needed:
+
+# export THEFUCK_DISABLED="true"
+
+# ============================================================================
+# Machine-Specific Aliases (HiveNet/WSL-only)
+# ============================================================================
+if [[ "$IS_HIVENET_CLIENT" == true ]]; then
+  alias avdump='dotnet /mnt/g/02\ -\ Utilities/AVDump3/AVDump3CL.dll FROMFILE /mnt/g/02\ -\ Utilities/AVDump3/arguments.txt /mnt/plex/anime'
+  alias hivedrop='telnet 192.168.1.25 3335'
+fi
+
+# Raspberry Pi specific aliases
+if [[ "$IS_RASPBERRY_PI" == true ]]; then
+  # Add Pi-specific aliases here
+  alias piupdate='sudo apt update && sudo apt upgrade -y'
+fi
+
+# ============================================================================
+# Machine-Specific Environment Variables
+# ============================================================================
+# Example:
+# export CUSTOM_VAR="value"
+# export LOCAL_PATH="/path/to/local/tools"
+
+# ============================================================================
+# Machine-Specific SSH/Keychain Setup
+# ============================================================================
+# Only load keychain on systems where it's needed and installed
+if command -v keychain >/dev/null 2>&1 && [[ "$IS_HIVENET_CLIENT" == true ]]; then
+  # Uncomment if keychain is available
+  # keychain ~/.ssh/id_rsa --agents ssh -q
+fi
+
+# ============================================================================
+# Machine-Specific Function Overrides
+# ============================================================================
+# Example function override for specific machine needs:
+# custom_function() {
+#   echo "Machine-specific implementation"
+# }
+
+# ============================================================================
+# Secrets and Credentials
+# ============================================================================
+# NEVER commit actual secrets here. Use environment files:
+# if [ -f "$HOME/.config/secrets/credentials.env" ]; then
+#   source "$HOME/.config/secrets/credentials.env"
+# fi

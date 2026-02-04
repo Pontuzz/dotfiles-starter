@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Example custom MOTD message
+# Copy/modify to add your own messages
+
+# Uncomment to enable:
+# echo "⚙️  Welcome back! Your dotfiles are synced."
+# echo ""

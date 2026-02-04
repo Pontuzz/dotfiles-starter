@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Machine-specific Bash configuration (GITIGNORED)
+#
+# Add any machine-specific settings here that shouldn't be committed:
+# - SSH key passphrases
+# - Internal IPs or hostnames
+# - Work-specific paths
+# - Machine-specific tool configurations
+#
+# Example:
+#
+# if [[ "$MACHINE_TYPE" == "hivenet_client" ]]; then
+#     export WORK_PATH="/path/to/work"
+#     alias work="cd $WORK_PATH"
+# fi
+#
+# if [[ "$IS_RASPBERRY_PI" == true ]]; then
+#     export PI_SPECIFIC_VAR="value"
+# fi

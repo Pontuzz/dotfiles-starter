@@ -1,0 +1,198 @@
+# Privacy-focused ignores for dotfiles
+# ===========================================================================
+# This file prevents accidental commits of sensitive information
+
+# ============================================================================
+# SECRETS AND CREDENTIALS (CRITICAL)
+# ============================================================================
+.config/secrets/
+.config/secrets/**
+~/.ssh/
+.ssh/
+.ssh/config
+.ssh/config.d/
+.ssh/known_hosts
+.ssh/authorized_keys
+.ssh/id_*
+.ssh/identity*
+.gitconfig
+.gitconfig.local
+*.env
+*.env.*
+*.env.local
+*.env.*.local
+.env.*.php
+.env.production.local
+.env.*.local
+.env.local.php
+credentials.*
+credentials/**
+.credentials
+.credentials/**
+
+# API Keys, Tokens, and Auth
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.pub
+*.asc
+*.gpg
+.gpg
+.pgp
+*_secret*
+*_token*
+*_key*
+*_pass*
+*_token.js
+*_token.py
+*_token.sh
+keyring/
+keychain-*
+
+# ============================================================================
+# SENSITIVE CONFIGURATION
+# ============================================================================
+config.secret.*
+config.local.*
+secrets.json
+secrets.yml
+secrets.yaml
+secrets.local.*
+local.conf
+local.config
+**/local/**
+**/private/**
+.private/
+.local/private/
+
+# SSH and security
+.ssh/
+ssh_config
+authorized_keys
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+known_hosts
+
+# ============================================================================
+# ZSHELL SPECIFIC
+# ============================================================================
+.zsh_history
+.bash_history
+*history*
+*.zsh_history
+*.bash_history
+.zcompdump*
+.cache/zsh/
+
+# Local machine-specific zsh config
+.config/zsh/99-local.zsh
+.config/zsh/99-local.zsh.*
+.config/zsh/.zsh_history
+.config/zsh/.zcompdump*
+
+# ============================================================================
+# BACKUPS AND TEMPORARY FILES
+# ============================================================================
+*.bak
+*.bak.*
+*.pre-restore*
+*.tmp
+*.swp
+*.swo
+*~
+.~*
+*.backup
+*.backup.*
+*.old
+.tern-port
+
+# ============================================================================
+# EDITORS / IDEs
+# ============================================================================
+.vscode/
+.vscode-server/
+.idea/
+*.iml
+*.sublime-workspace
+*.sublime-project
+.DS_Store
+Thumbs.db
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-settings
+*.sublime-workspace
+
+# ============================================================================
+# APPLICATION CACHES AND LOGS
+# ============================================================================
+.cache/
+.local/share/weechat/logs/
+**/logs/**
+*.log
+*.log.*
+*.log.gz
+logfile
+.logfile
+
+# ============================================================================
+# PACKAGE MANAGERS
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+dist/
+build/
+node_modules/
+package-lock.json
+yarn.lock
+
+# ============================================================================
+# OS FILES
+# ============================================================================
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+*.swp
+.Spotlight-V100
+.Trashes
+
+# ============================================================================
+# REPO METADATA (Don't expose repo internals)
+# ============================================================================
+.gitmodules
+.git/config
+.git/
+.gitconfig
+
+# ============================================================================
+# BASH/SHELL RUNTIME FILES
+# ============================================================================
+.bashrc.d/99-local.bash
+.config/motd/20-custom.sh
+.bash_history
+.bash_sessions/
+.bash_profile.local
+
+# ============================================================================
+# RUNTIME/TEMPORARY
+# ============================================================================
+*.pid
+*.pid.*
+.pidfile
+.tmp/
+.temp/
+/tmp
+/temp
+tmp/
+temp/

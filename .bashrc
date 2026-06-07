@@ -16,6 +16,7 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
 # History settings
 HISTSIZE=50000
 HISTFILESIZE=50000
+HISTFILE="$HOME/.local/share/history/bash/.bash_history"
 HISTCONTROL=ignoreboth
 HISTTIMEFORMAT="%F %T "
 shopt -s histappend

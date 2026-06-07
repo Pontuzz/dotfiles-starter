@@ -205,3 +205,39 @@ if (( _elapsed > 3.0 )); then
   printf "⚠️  Shell startup took %.1fs — check for slow plugins or tools\n" $_elapsed
 fi
 unset _dotfiles_start
+
+# ============================================================================
+# Tool availability check — lists expected tools that aren't installed
+# Runs at most once per day. Silent when all tools are present.
+# ============================================================================
+_dotfiles_check_tools() {
+  local _cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+  local _stamp="$_cache/.tool_check_stamp"
+  local _today="${(%):-%D{%Y%m%d}}"
+
+  # Only run once per day
+  if [[ -f "$_stamp" ]]; then
+    local _last; _last=$(<"$_stamp")
+    [[ "$_last" == "$_today" ]] && return
+  fi
+
+  local -a _missing
+  local _tool
+
+  # Tools that the dotfiles config wraps or aliases
+  for _tool in fzf zoxide bat lsd eza ripgrep thefuck navi; do
+    if ! command -v "$_tool" >/dev/null 2>&1; then
+      _missing+=("$_tool")
+    fi
+  done
+
+  if (( ${#_missing} > 0 )); then
+    echo "💡 Optional tools not found: ${(j:, :)_missing}"
+    echo "   Install: brew install ${_missing[*]}"
+    echo "   (or use apt/pacman — see each tool's docs)"
+  fi
+
+  mkdir -p "$_cache"
+  print -r -- "$_today" >| "$_stamp"
+}
+_dotfiles_check_tools

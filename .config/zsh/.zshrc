@@ -8,6 +8,10 @@
 # Designed to be portable across WSL, Linux, macOS, and Raspberry Pi.
 # ============================================================================
 
+# Startup timer — must be the very first thing to get accurate measurement
+zmodload zsh/datetime 2>/dev/null
+typeset _dotfiles_start=$EPOCHREALTIME
+
 # 0. Machine detection (platform and hostname-based flags)
 [ -f "$ZDOTDIR/20-machine-detect.zsh" ] && source "$ZDOTDIR/20-machine-detect.zsh"
 
@@ -191,3 +195,13 @@ _zcompdump_rotate() {
   print -r -- "$today" >| "$stamp_file"
 }
 _zcompdump_rotate
+
+# ============================================================================
+# Startup time guard — warns if shell initialization takes too long
+# Threshold: 3 seconds. Silent when healthy.
+# ============================================================================
+local _elapsed=$(( EPOCHREALTIME - _dotfiles_start ))
+if (( _elapsed > 3.0 )); then
+  printf "⚠️  Shell startup took %.1fs — check for slow plugins or tools\n" $_elapsed
+fi
+unset _dotfiles_start

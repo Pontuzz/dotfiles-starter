@@ -19,13 +19,17 @@
 
 # export THEFUCK_DISABLED="true"
 
+# Suppress missing-tool warnings for tools you know you don't need
+# Example: DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi eza ripgrep"
+# DOTFILES_IGNORE_MISSING_TOOLS=""
+
 # ============================================================================
-# Machine-Specific Aliases (HiveNet/WSL-only)
+# Machine-Specific Aliases
 # ============================================================================
-if [[ "$IS_HIVENET_CLIENT" == true ]]; then
-  alias avdump='dotnet /mnt/g/02\ -\ Utilities/AVDump3/AVDump3CL.dll FROMFILE /mnt/g/02\ -\ Utilities/AVDump3/arguments.txt /mnt/plex/anime'
-  alias hivedrop='telnet 192.168.1.25 3335'
-fi
+# Example aliases for specific machines:
+# if [[ "$(hostname)" == "my-machine" ]]; then
+#   alias myalias='some-command'
+# fi
 
 # Raspberry Pi specific aliases
 if [[ "$IS_RASPBERRY_PI" == true ]]; then
@@ -44,7 +48,7 @@ fi
 # Machine-Specific SSH/Keychain Setup
 # ============================================================================
 # Only load keychain on systems where it's needed and installed
-if command -v keychain >/dev/null 2>&1 && [[ "$IS_HIVENET_CLIENT" == true ]]; then
+if command -v keychain >/dev/null 2>&1; then
   # Uncomment if keychain is available
   # keychain ~/.ssh/id_rsa --agents ssh -q
 fi

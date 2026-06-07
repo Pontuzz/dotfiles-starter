@@ -82,11 +82,6 @@ setopt ALWAYS_TO_END
 # Optional integrations (guard with existence checks)
 # ============================================================================
 
-# Greeting/motd if available
-if [[ -f "$HOME/hive/zsh/.config/mygreeting.sh" ]]; then
-  source "$HOME/hive/zsh/.config/mygreeting.sh"
-fi
-
 # WARP shell integration
 printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh"}}\x9c'
 
@@ -227,9 +222,20 @@ _dotfiles_check_tools() {
   local -a _missing
   local _tool
 
+  # Build ignore list from DOTFILES_IGNORE_MISSING_TOOLS (set in 99-local.zsh)
+  # Space-separated tool names that you know are missing and don't want reminded about
+  local -a _ignore
+  if [[ -n "$DOTFILES_IGNORE_MISSING_TOOLS" ]]; then
+    _ignore=(${(s: :)DOTFILES_IGNORE_MISSING_TOOLS})
+  fi
+
   # Tools that the dotfiles config wraps or aliases
   for _tool in fzf zoxide bat lsd eza ripgrep thefuck navi; do
     if ! command -v "$_tool" >/dev/null 2>&1; then
+      # Skip if user has explicitly ignored this tool
+      if (( ${_ignore[(Ie)$_tool]} )); then
+        continue
+      fi
       _missing+=("$_tool")
     fi
   done

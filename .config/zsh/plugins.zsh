@@ -25,7 +25,6 @@ plugins=(
   zsh-autosuggestions
   # Productivity
   taskwarrior
-  thefuck
   vscode
 )
 

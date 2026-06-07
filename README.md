@@ -78,6 +78,17 @@ The `99-local.zsh` file is where YOU add sensitive/personal settings that should
 
 See [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) for detailed audit results.
 
+## 🆕 Recent Updates
+
+### June 2026 — Auto-Recovery & Diagnostics
+
+- **Startup time guard**: If your shell takes longer than 3 seconds to load, you'll see a warning with the exact time. Helps identify slow plugins or tools.
+- **Daily tool availability check**: Once per day, checks for optional tools (fzf, bat, ripgrep, etc.) and reports which are missing with install instructions. Silent when all tools are present.
+- **Tool check suppression**: Set `DOTFILES_IGNORE_MISSING_TOOLS` in `99-local.zsh` to silence reminders for tools you know are missing on a particular machine (e.g., `DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi"`).
+- **Symlink health check**: On each startup, verifies `~/.config/zsh`, `~/.zshenv`, `~/.bashrc` are properly linked. Silent when healthy; prints fix commands if broken.
+- **Zcompdump auto-rotation**: Stale `.zcompdump` files are pruned automatically (once per day), keeping the cache directory clean.
+- **HISTFILE migration**: Shell history is now stored at `~/.local/share/history/zsh/` (XDG-compliant), not in `ZDOTDIR`.
+
 ## 🎯 Quick Start
 
 ### Installation
@@ -186,6 +197,7 @@ git add .config/zsh/custom/themes/powerlevel10k
 git commit -m "Update powerlevel10k theme"
 git push
 ```
+
 **Initialize submodules if you forgot `--recursive`:**
 ```bash
 cd ~/dotfiles
@@ -244,28 +256,28 @@ dotfiles/
 │
 ```
 
-**Repository Structure Notes:**
-- `.config/secrets/` - User-created directory for storing local credentials (doesn't exist by default - create as needed)
-- `.zcompdump*` - Auto-generated Zsh completion dump files (regenerated each shell session)
-- `.zsh_history` - Auto-generated Zsh history file (regenerated each shell session)
-
-## �️ Machine-Specific Settings (99-local.zsh)
+## 🖥️ Machine-Specific Settings (99-local.zsh)
 
 The `99-local.zsh` file is your private configuration that never gets committed. It's sourced LAST, so it can override anything.
 
-### Example: Setting Up for Different Machines
+**Quick start:**
+```bash
+cp ~/.config/zsh/99-local.zsh.example ~/.config/zsh/99-local.zsh
+nano ~/.config/zsh/99-local.zsh
+```
+
+### Examples by Machine Type
 
 ```bash
 # ~/.config/zsh/99-local.zsh (GITIGNORED - safe to add secrets here)
 
-# ===== HiveNet Client Machine (hostname [work-machine]) =====
-if [[ "$IS_HIVENET_CLIENT" == true ]]; then
+# ===== Work Machine (hostname [work-machine]) =====
+if [[ "$MACHINE_TYPE" == "workstation" ]]; then
   # SSH key setup
   keychain ~/.ssh/id_rsa --agents ssh -q
   
   # Internal service aliases (replace IPs with your actual values)
-  alias [internal-tool]='telnet [your-internal-ip] 3335'
-  alias avdump='dotnet /mnt/g/02\ -\ Utilities/[media-tool]/[media-tool]CL.dll ...'
+  alias internal-tool='telnet [your-internal-ip] 3335'
   
   # Work-specific PATH
   export WORK_ROOT="$HOME/work"
@@ -273,33 +285,25 @@ fi
 
 # ===== Raspberry Pi (hostname raspberrypi*) =====
 if [[ "$IS_RASPBERRY_PI" == true ]]; then
-  # Pi-specific setup
   alias piupdate='sudo apt update && sudo apt upgrade -y'
   alias piclean='sudo apt autoremove && sudo apt autoclean'
-  
-  # Pi performance settings
   export HISTSIZE=10000  # Smaller history on limited storage
 fi
 
 # ===== Generic fallback (any other machine) =====
 if [[ "$MACHINE_TYPE" == "generic" ]]; then
-  # Default machine setup
   echo "Running on generic machine"
 fi
 
 # ===== Personal/Private Settings (all machines) =====
-# API keys, tokens, credentials (never commit these!)
-export GITHUB_TOKEN="your_token_here"  # If needed
-export CUSTOM_API_KEY="secret_value"   # Your secrets
-
-# Personal aliases
+export GITHUB_TOKEN="your_token_here"
+export CUSTOM_API_KEY="secret_value"
 alias myrepo='cd $HOME/projects/repo'
-alias work='cd $HOME/work'
 ```
 
 ### Platform Detection Variables Available
 
-You can use these variables in `99-local.zsh` for conditional setup. Both `MACHINE_TYPE` and specific flags are available:
+Use these variables in `99-local.zsh` for conditional setup:
 
 ```bash
 IS_WSL=true/false         # Windows Subsystem for Linux
@@ -318,77 +322,25 @@ IS_RASPBERRY_PI=true/false
 
 When you clone this repo to a new machine:
 1. `20-machine-detect.zsh` runs and detects your platform
-2. Sets the appropriate flags based on what it finds:
-   - Always sets: `IS_WSL`, `IS_LINUX`, `IS_MACOS`, `IS_ARM` (true/false)
-   - Hostname-based: If hostname matches, sets `IS_HIVENET_CLIENT` or `IS_RASPBERRY_PI`
-   - Always sets: `MACHINE_TYPE` ("hivenet_client", "raspberry_pi", or "generic")
-3. Your `99-local.zsh` can check these flags to enable machine-specific setup
-4. Everything else stays the same across machines
+2. Sets the appropriate flags: `IS_WSL`, `IS_LINUX`, `IS_MACOS`, `IS_ARM`, `MACHINE_TYPE`
+3. Hostname-based flags: `IS_HIVENET_CLIENT`, `IS_RASPBERRY_PI`
+4. Your `99-local.zsh` can check these flags for machine-specific setup
 
-This means **one repo, unlimited machines** - just customize `99-local.zsh` per machine by checking the appropriate flags!
+**One repo, unlimited machines** — just customize `99-local.zsh` per machine.
 
 ## 🔧 Symlink Workflow
 
 When using symlinks, **all edits happen in the dotfiles repo**. Edit files at `~/dotfiles/.config/zsh/` and changes take effect immediately via the symlink. For detailed workflow information, see [SYMLINK_WORKFLOW.md](SYMLINK_WORKFLOW.md).
 
+## 📋 Configuration Overview
 
-## 📋 Configuration Files Explained
+The dotfiles use a modular zsh configuration with files sourced in a specific order:
 
-### `.zshenv` (Home directory)
-- **Purpose**: Sourced by ALL shells (login, interactive, and non-interactive)
-- **Contains**: XDG paths, PATH setup, essential environment variables
-- **Portable**: Platform-aware, guards WSL-specific paths, checks for tool availability
-- **Edit**: `~/dotfiles/.zshenv`
+```
+.zshrc → 00-init-early → 20-machine-detect → plugins → 40-env → 50-tools → aliases → functions → 99-local (gitignored)
+```
 
-### `.zshrc` (Modular sourcing hub)
-- **Purpose**: Main zsh configuration that sources all other files in order
-- **Order matters**: Early init → machine detect → plugins → env → tools → aliases
-- **Modular**: Each file has a specific purpose and can be edited independently
-- **Edit**: `~/dotfiles/.config/zsh/.zshrc`
-
-### `00-init-early.zsh`
-- **Purpose**: Runs BEFORE instant prompt for critical early setup
-- **Contains**: Powerlevel10k instant prompt, Zellij auto-start, keychain initialization
-- **Edit**: `~/dotfiles/.config/zsh/00-init-early.zsh`
-
-### `20-machine-detect.zsh`
-- **Purpose**: Auto-detect platform and set feature flags
-- **Provides**: `$IS_WSL`, `$IS_LINUX`, `$IS_MACOS`, `$IS_ARM`, `$MACHINE_TYPE`
-- **Used by**: Other configs and 99-local.zsh for conditional setup
-- **Edit**: `~/dotfiles/.config/zsh/20-machine-detect.zsh`
-
-### `plugins.zsh`
-- **Purpose**: Oh My Zsh plugin loading and completion configuration
-- **Contains**: Plugin list, zstyle completion settings, Oh My Zsh initialization
-- **Includes**:
-  - **External plugins (git submodules)**: fzf-dir-navigator, zsh-autosuggestions, zsh-bat, zsh-lsd, zsh-syntax-highlighting
-  - **Custom embedded plugins**: lazy-loader, my-alias, my-ssh, performance-monitor
-  - **Oh My Zsh plugins**: git, taskwarrior, thefuck, vscode, fzf
-- **Edit**: `~/dotfiles/.config/zsh/plugins.zsh`
-
-### `40-env.zsh`
-- **Purpose**: Environment variables (EDITOR, PYENV_ROOT, NVM_DIR, etc.)
-- **Edit**: `~/dotfiles/.config/zsh/40-env.zsh`
-
-### `50-tools.zsh`
-- **Purpose**: Tool initialization (brew, zoxide, fzf, atuin, thefuck)
-- **Graceful**: Tools are checked with `command -v` before initializing
-- **Edit**: `~/dotfiles/.config/zsh/50-tools.zsh`
-
-### `aliases.zsh`
-- **Purpose**: Portable, cross-platform aliases (no machine-specific paths)
-- **Edit**: `~/dotfiles/.config/zsh/aliases.zsh`
-
-### `functions.zsh`
-- **Purpose**: Custom zsh functions and helpers
-- **Edit**: `~/dotfiles/.config/zsh/functions.zsh`
-
-### `99-local.zsh` (⚠️ GITIGNORED)
-- **Purpose**: Machine-specific configuration (secrets, work-only aliases, local tools)
-- **Location**: `~/.config/zsh/99-local.zsh` (NOT in repo, stays on local machine)
-- **Template**: Copy from `~/.config/zsh/99-local.zsh.example`
-- **Contains**: Keychain setup, work aliases, local overrides, credentials
-- **Edit**: `~/.config/zsh/99-local.zsh` (your local machine only, not in repo)
+Each file has a specific purpose. See [ARCHITECTURE.md](.config/zsh/ARCHITECTURE.md) for the complete file-by-file breakdown.
 
 ## 🐚 Bash Configuration
 
@@ -409,18 +361,6 @@ ln -s ~/dotfiles/.bashrc ~/.bashrc
 - **50-tools.bash**: Tool initialization (brew, zoxide, fzf, atuin)
 - **60-aliases.bash**: Portable cross-platform aliases
 - **99-local.bash.example**: Template for machine-specific config
-
-### Using Bash
-```bash
-# Create machine-specific config
-cp ~/.bashrc.d/99-local.bash.example ~/.bashrc.d/99-local.bash
-nano ~/.bashrc.d/99-local.bash
-
-# Add conditional settings for your machine
-if [[ "$MACHINE_TYPE" == "hivenet_client" ]]; then
-    export WORK_PATH="/path/to/work"
-fi
-```
 
 Platform detection in Bash works the same as Zsh:
 - `$IS_WSL`, `$IS_LINUX`, `$IS_MACOS`, `$IS_ARM`, `$MACHINE_TYPE`
@@ -443,9 +383,7 @@ nano ~/.gitconfig
     email = "your.email@example.com"
 ```
 
-**Important**: Your `~/.gitconfig` is **gitignored** and never committed. Each machine can have different settings (credentials, internal repos, etc.).
-
-The `.gitconfig.example` in the repo is a reference template - edit your local `~/.gitconfig` file directly.
+**Important**: Your `~/.gitconfig` is **gitignored** and never committed. Each machine can have different settings.
 
 ## 🔐 SSH Configuration
 
@@ -453,124 +391,33 @@ SSH configuration is also templated to protect sensitive hostnames and keys:
 
 ### Setup
 ```bash
-# Create .ssh directory if it doesn't exist
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-
-# Copy template
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
 cp ~/dotfiles/.ssh/config.example ~/.ssh/config
-
-# Edit with your actual hosts
-nano ~/.ssh/config
-
-# Secure permissions
 chmod 600 ~/.ssh/config
-```
-
-### Example SSH Hosts
-```bash
-# After editing ~/.ssh/config, you can use:
-ssh work           # Connects to work.example.com
-ssh raspberry-pi   # Connects to pi.example.local
-ssh internal-*     # Wildcard pattern with bastion proxy
+nano ~/.ssh/config
 ```
 
 **Important**: Your real `~/.ssh/config` is **gitignored** for security. The `.ssh/config.example` shows templates and patterns.
 
 ## 💬 MOTD (Message of the Day)
 
-Custom user-level MOTD displays system information on shell startup:
+Custom user-level MOTD displays content on shell startup. The template includes a figlet-based ASCII art MOTD with auto-detection for container environments (Docker, Zellij).
 
 ### Features
-- **10-system.sh**: Displays system info (uptime, memory, disk, CPU, architecture)
-- **Shared by Bash and Zsh**: Displays once per session in both shells
+- **Figlet ASCII art**: Displays "DOTFILES" with system info on startup
+- **Container-aware**: Suppressed inside Docker containers and Zellij panes
+- **Once-per-session**: Uses a timestamp stamp to display only once (even across Bash/Zsh switches)
 - **20-custom.sh.example**: Template to add custom messages
 
 ### Customizing MOTD
 ```bash
-# Copy example to create custom message
+# Edit the main MOTD script to customize branding
+nano ~/.config/motd/10-hivenet-motd.sh
+
+# Or add custom messages
 cp ~/.config/motd/20-custom.sh.example ~/.config/motd/20-custom.sh
-
-# Edit your custom message
 nano ~/.config/motd/20-custom.sh
-
-# Make it executable
 chmod +x ~/.config/motd/20-custom.sh
-
-# Example custom message:
-#!/usr/bin/env bash
-echo "🚀 Welcome to $(hostname)!"
-echo "Today's tasks: Check email, review PRs"
-```
-
-### MOTD Files
-Each file in `~/.config/motd/` named `{00,10,20,30,40,50}-*.sh` is sourced at shell startup. Files execute in numerical order.
-
-Create new files as needed:
-```bash
-cat > ~/.config/motd/30-reminders.sh << 'EOF'
-#!/usr/bin/env bash
-echo "⚠️  Don't forget: Update dependencies this week"
-EOF
-chmod +x ~/.config/motd/30-reminders.sh
-```
-
-## 🎨 Customization
-
-### Add Machine-Specific Aliases
-```bash
-# Edit your local config (stays on this machine only)
-nano ~/.config/zsh/99-local.zsh
-
-# Add conditional aliases
-if [[ "$IS_WORK_MACHINE" == true ]]; then
-  keychain ~/.ssh/id_rsa --agents ssh -q
-  alias workserver='telnet [your-internal-ip] 3335'
-fi
-
-if [[ "$IS_RASPBERRY_PI" == true ]]; then
-  alias piupdate='sudo apt update && sudo apt upgrade -y'
-fi
-```
-
-### Add Custom Functions
-```bash
-# Edit functions.zsh in the repo (shared across machines)
-nano ~/dotfiles/.config/zsh/functions.zsh
-
-# Add your function
-my_function() {
-  echo "Custom function"
-}
-
-# Commit and push to share with other machines
-cd ~/dotfiles && git add .config/zsh/functions.zsh && git commit -m "Add function"
-```
-
-### Add New Tools
-```bash
-# Edit 50-tools.zsh in the repo
-nano ~/dotfiles/.config/zsh/50-tools.zsh
-
-# Add your tool initialization (with command check for portability)
-if command -v my-tool >/dev/null 2>&1; then
-  eval "$(my-tool init zsh)"
-fi
-
-# Commit and push
-cd ~/dotfiles && git add .config/zsh/50-tools.zsh && git commit -m "Add tool support"
-```
-
-### Add Portable Aliases
-```bash
-# Edit aliases.zsh for aliases that work on all machines
-nano ~/dotfiles/.config/zsh/aliases.zsh
-
-# Add alias (no hardcoded paths or IPs)
-alias myalias='some-command'
-
-# Commit and push
-cd ~/dotfiles && git add .config/zsh/aliases.zsh && git commit -m "Add alias"
 ```
 
 ## 📦 Dependencies
@@ -595,6 +442,11 @@ cd ~/dotfiles && git add .config/zsh/aliases.zsh && git commit -m "Add alias"
 - `keychain` - SSH key management
 
 Missing tools don't break the config. Tools are checked with `command -v` before use.
+
+**Suppress reminders for known-missing tools:** Add this to `~/.config/zsh/99-local.zsh`:
+```bash
+DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi eza"
+```
 
 ## 🔐 Security & Secrets
 
@@ -641,19 +493,17 @@ exec zsh
 ### Push to GitHub (Share across machines)
 
 ```bash
-# After making changes
 cd ~/dotfiles
 git add .config/zsh/aliases.zsh
 git commit -m "Add new aliases"
-git push origin master
+git push origin main
 ```
 
 ### Pull on Other Machines
 
 ```bash
-# On another machine (Pi3, etc.), get latest changes
 cd ~/dotfiles
-git pull origin master
+git pull origin main
 exec zsh  # Restart shell to reload config
 ```
 
@@ -665,143 +515,23 @@ git clone https://github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
 # ... create symlinks, setup 99-local.zsh, restart shell
 ```
 
-## 📝 .gitignore Details
-
-Files that are **NOT** tracked by git:
-
-```bash
-# Local machine-specific configuration
-.config/zsh/99-local.zsh
-
-# Secrets and credentials
-.config/secrets/
-
-# Zsh runtime files (auto-generated, regenerated each shell)
-.config/zsh/.zcompdump*
-.config/zsh/.zsh_history
-```
-
-These are generated at runtime and should never be committed.
-
 ## 🐛 Troubleshooting
 
-### GitHub authentication failed (password not supported)
-```bash
-# ❌ This no longer works (GitHub disabled password auth):
-git clone https://github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
-# Error: "Password authentication is not supported"
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions to common issues:
 
-# ✅ Use SSH instead (recommended):
-git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
-# Requires SSH key configured: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
-
-# ✅ Or use Personal Access Token (PAT):
-git clone --recursive https://<PAT>@github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
-# Get PAT: https://github.com/settings/tokens (check "repo" scope)
-# Then replace <PAT> with your actual token
-```
-
-### Shell won't start
-```bash
-# Check for syntax errors
-zsh -n ~/.zshrc
-
-# Load with verbose output
-zsh -x ~/.zshrc 2>&1 | head -20
-```
-
-### Zsh theme (Powerlevel10k) looks broken
-```bash
-# This usually means you need to install Powerlevel10k fonts
-# Download and install from: https://github.com/romkatv/powerlevel10k#fonts
-# After installing, your prompt should look correct
-
-# Or temporarily disable Powerlevel10k in 00-init-early.zsh
-```
-
-### Tools not initializing (fzf, brew, zoxide, etc.)
-```bash
-# Check if tool is installed and available
-command -v fzf       # Check fzf
-command -v zoxide    # Check zoxide
-command -v brew      # Check brew
-command -v atuin     # Check atuin
-
-# If not found, install it:
-# - Ubuntu/Debian: sudo apt install <package>
-# - macOS: brew install <package>
-# - Arch: sudo pacman -S <package>
-```
-
-### Symlink issues
-```bash
-# Verify symlink is correct
-ls -l ~/.config/zsh
-# Should show: ~/.config/zsh -> ~/dotfiles/.config/zsh
-
-# If broken, recreate it
-rm ~/.config/zsh
-ln -s ~/dotfiles/.config/zsh ~/.config/zsh
-```
-
-### Submodule Issues
-
-**Submodules not cloned (empty directories)**
-```bash
-# If you cloned without --recursive
-cd ~/dotfiles
-git submodule update --init --recursive
-
-# Or re-clone properly
-cd ~
-rm -rf dotfiles
-git clone --recursive https://github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
-```
-
-**Submodules not updating after `git pull`**
-```bash
-# git pull doesn't automatically update submodules
-cd ~/dotfiles
-git pull origin master
-git submodule update --remote --merge
-
-# Or as a single command:
-git pull origin master && git submodule update --remote --merge
-```
-
-**Check submodule status**
-```bash
-git submodule status
-# Shows: <commit-hash> <path> (<version/branch>)
-# Example output:
-# 67cd8c4 .config/zsh/.oh-my-zsh (heads/master)
-# 0fb5488 .config/zsh/custom/plugins/fzf-dir-navigator (v1.2.2-5-g0fb5488)
-```
-
-**Update a specific submodule to latest**
-```bash
-# Update just one plugin/theme
-git submodule update --remote .config/zsh/custom/plugins/zsh-bat
-git add .config/zsh/custom/plugins/zsh-bat
-git commit -m "Update zsh-bat plugin"
-git push
-
-# Or update everything at once
-git submodule update --remote --merge
-git add .gitmodules .config/zsh/
-git commit -m "Update all submodules"
-git push
-```
-
-### Platform detection not working
-```bash
-# Check what platform was detected
-zsh -c "source ~/.config/zsh/20-machine-detect.zsh && \
-  echo \"IS_WSL=\$IS_WSL IS_ARM=\$IS_ARM MACHINE_TYPE=\$MACHINE_TYPE\""
-```
+- GitHub authentication failed
+- Shell won't start
+- Powerlevel10k looks broken
+- Tools not initializing
+- Symlink issues
+- Submodule issues (empty directories, pull problems)
+- Platform detection not working
+- Slow startup / missing tool warnings
 
 ## 📚 Additional Resources
 
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Solutions to common issues
+- [.config/zsh/ARCHITECTURE.md](.config/zsh/ARCHITECTURE.md) - Configuration flow and design
 - [.config/zsh/PORTABLE_SETUP.md](.config/zsh/PORTABLE_SETUP.md) - Detailed portable setup guide
 - [.config/zsh/SYMLINK_WORKFLOW.md](.config/zsh/SYMLINK_WORKFLOW.md) - Symlink workflow and best practices
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k) - Prompt theme
@@ -816,4 +546,4 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 **Status**: ✅ Stable and portable  
 **Tested on**: WSL2 (Ubuntu), Raspberry Pi 3, Linux  
-**Last updated**: February 4, 2026
+**Last updated**: June 7, 2026

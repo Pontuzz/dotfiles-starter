@@ -109,6 +109,55 @@ if [[ -d "$DOTFILES/.git" ]]; then
 fi
 
 # ============================================================================
+# Symlink health check — warns if critical dotfiles symlinks are missing/broken
+# Silent when healthy; only prints actionable messages on problems
+# ============================================================================
+_dotfiles_check_links() {
+  local _issues=0
+
+  # ~/.config/zsh must point to the repo's zsh config
+  if [[ ! -L "$HOME/.config/zsh" ]]; then
+    echo "⚠️  ~/.config/zsh is not a symlink (expected → $DOTFILES/.config/zsh)"
+    echo "   Fix: ln -sf $DOTFILES/.config/zsh ~/.config/zsh"
+    (( _issues++ ))
+  elif [[ ! -e "$HOME/.config/zsh" ]]; then
+    echo "⚠️  ~/.config/zsh symlink is broken — target missing"
+    echo "   Fix: ln -sf $DOTFILES/.config/zsh ~/.config/zsh"
+    (( _issues++ ))
+  fi
+
+  # ~/.bashrc should point to the repo's bashrc (optional if bash isn't used)
+  if [[ ! -L "$HOME/.bashrc" ]]; then
+    echo "⚠️  ~/.bashrc is not a symlink (expected → $DOTFILES/.bashrc)"
+    echo "   Fix: ln -sf $DOTFILES/.bashrc ~/.bashrc"
+    (( _issues++ ))
+  elif [[ ! -e "$HOME/.bashrc" ]]; then
+    echo "⚠️  ~/.bashrc symlink is broken"
+    echo "   Fix: ln -sf $DOTFILES/.bashrc ~/.bashrc"
+    (( _issues++ ))
+  fi
+
+  # ~/.zshenv must exist (symlink or regular file — both are valid)
+  if [[ ! -f "$HOME/.zshenv" ]]; then
+    echo "⚠️  ~/.zshenv is missing — dotfiles env won't load"
+    echo "   Fix: ln -s $DOTFILES/.zshenv ~/.zshenv (or copy it)"
+    (( _issues++ ))
+  fi
+
+  # Dotfiles repo itself
+  if [[ ! -d "$DOTFILES/.git" ]]; then
+    echo "⚠️  Dotfiles repo not found at $DOTFILES"
+    echo "   Fix: git clone git@github.com:Pontuzz/dotfiles.git $DOTFILES"
+    (( _issues++ ))
+  fi
+
+  if (( _issues > 0 )); then
+    echo "🔧 $_issues dotfiles issue(s) found — see above"
+  fi
+}
+_dotfiles_check_links
+
+# ============================================================================
 # Zcompdump rotation — prunes stale completion cache files
 # Runs at most once per day to avoid slowdown on every shell start
 # ============================================================================

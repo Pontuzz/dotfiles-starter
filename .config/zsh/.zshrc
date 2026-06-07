@@ -102,14 +102,16 @@ fi
 # ============================================================================
 # Git hooks — auto-configure shared hooks for dotfiles repo
 # Ensures submodules stay in sync after git pull on any machine
+# Uses a stamp file so this runs exactly once — subsequent starts are instant
 # ============================================================================
 if [[ -d "$DOTFILES/.git" ]]; then
-  local _hooks
-  _hooks=$(git -C "$DOTFILES" config --get core.hooksPath 2>/dev/null || true)
-  if [[ "$_hooks" != "$DOTFILES/hooks" ]]; then
+  local _stamp="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/.dotfiles_hooks_stamp"
+  if [[ ! -f "$_stamp" ]]; then
     git -C "$DOTFILES" config core.hooksPath "$DOTFILES/hooks"
+    mkdir -p "$(dirname "$_stamp")"
+    touch "$_stamp"
   fi
-  unset _hooks
+  unset _stamp
 fi
 
 # ============================================================================

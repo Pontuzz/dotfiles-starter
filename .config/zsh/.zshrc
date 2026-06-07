@@ -96,6 +96,19 @@ if [ -d "$FNM_PATH" ]; then
 fi
 
 # ============================================================================
+# Git hooks — auto-configure shared hooks for dotfiles repo
+# Ensures submodules stay in sync after git pull on any machine
+# ============================================================================
+if [[ -d "$DOTFILES/.git" ]]; then
+  local _hooks
+  _hooks=$(git -C "$DOTFILES" config --get core.hooksPath 2>/dev/null || true)
+  if [[ "$_hooks" != "$DOTFILES/hooks" ]]; then
+    git -C "$DOTFILES" config core.hooksPath "$DOTFILES/hooks"
+  fi
+  unset _hooks
+fi
+
+# ============================================================================
 # Zcompdump rotation — prunes stale completion cache files
 # Runs at most once per day to avoid slowdown on every shell start
 # ============================================================================

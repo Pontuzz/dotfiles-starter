@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Post-merge hook — keeps submodules in sync after git pull
+# Runs `git submodule update --init --recursive` automatically
+#
+# Installed by setting:
+#   git config core.hooksPath hooks/
+
+set -e
+
+echo "📦 Post-merge: updating submodules..."
+git submodule update --init --recursive
+echo "✅ Submodules up to date"

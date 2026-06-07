@@ -33,7 +33,10 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 # Completion and zstyle configuration
-autoload -Uz compinit && compinit
+# Use XDG cache directory for .zcompdump
+# Falls back if .zshenv hasn't set ZSH_COMPDUMP (defensive for multi-machine)
+local _zd="${ZSH_COMPDUMP:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh/.zcompdump-$HOST}"
+autoload -Uz compinit && compinit -d "$_zd"
 
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' ignore-patterns '*.exe'

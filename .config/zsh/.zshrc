@@ -94,3 +94,38 @@ if [ -d "$FNM_PATH" ]; then
   export PATH="$FNM_PATH:$PATH"
   eval "`fnm env`"
 fi
+
+# ============================================================================
+# Zcompdump rotation — prunes stale completion cache files
+# Runs at most once per day to avoid slowdown on every shell start
+# ============================================================================
+_zcompdump_rotate() {
+  local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+  local stamp_file="$cache_dir/.zcompdump_rotate_stamp"
+  local today="${(%):-%D{%Y%m%d}}"
+
+  # Only run once per day
+  if [[ -f "$stamp_file" ]]; then
+    local last_run
+    last_run=$(<"$stamp_file")
+    [[ "$last_run" == "$today" ]] && return
+  fi
+
+  # Prune all but the newest .zcompdump in the cache dir
+  local -a dumps
+  dumps=("$cache_dir"/.zcompdump*(N.om))
+  if (( ${#dumps} > 1 )); then
+    rm -f "${dumps[@]:1}"
+  fi
+
+  # Also clean any stray dumps left in ZDOTDIR (legacy location)
+  dumps=("$ZDOTDIR"/.zcompdump*(N.om))
+  if (( ${#dumps} > 1 )); then
+    rm -f "${dumps[@]:1}"
+  fi
+
+  # Ensure cache directory exists, then update stamp
+  mkdir -p "$cache_dir"
+  print -r -- "$today" >| "$stamp_file"
+}
+_zcompdump_rotate

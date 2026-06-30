@@ -12,8 +12,11 @@
 alias ref="source ~/.config/zsh/.zshrc"
 
 ## Navigation ##
-alias cd='z'
-alias zz='z -'
+# Guarded: if zoxide isn't installed, system cd remains available
+if command -v zoxide >/dev/null 2>&1; then
+  alias cd='z'
+  alias zz='z -'
+fi
 alias cht="cht.sh --shell"
 
 ## List utilities (lsd/eza) ##
@@ -21,7 +24,8 @@ alias ls='lsd'
 alias l='lsd -l'
 alias la='lsd -a'
 alias lla='lsd -la'
-alias lt='lsd --tree'
+alias lt='lsd --tree --depth 3'
+alias ltn='lsd --tree'  # no depth limit (use carefully)
 alias ll="eza -alh"
 alias ett="eza --tree"
 
@@ -31,7 +35,7 @@ alias vi=vim
 alias nv=nvim
 
 ## Fun utilities ##
-alias wttr="curl https://wttr.in/Norrköping"
+alias wttr="curl https://wttr.in"  # auto-detect location, or use wttr.in/[your-city]
 
 ## Single character shortcuts ##
 alias _="sudo"

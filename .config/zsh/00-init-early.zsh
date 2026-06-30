@@ -14,21 +14,24 @@ fi
 
 # ── Display MOTD ──
 # Strategy:
-#   - Outside Zellij (SSH, etc.): show MOTD every time   (MOTD_SHOWN tracked)
-#   - Inside Zellij: show MOTD once per session name      (stamp file tracked)
+#   - Outside Zellij (SSH, etc.): show MOTD every time   (DF_MOTD_SHOWN tracked)
+#   - Inside Zellij: show MOTD once per 6h per session   (stamp with mtime check)
 #   - When Zellij will start (outer WSL shell): suppress  (would be eaten)
+# Uses DF_MOTD_SHOWN (not MOTD_SHOWN) to avoid collision with PAM pam_motd
 # This is NOT exported — each Zellij pane evaluates independently.
-if [[ -z "$MOTD_SHOWN" ]]; then
+if [[ -z "$DF_MOTD_SHOWN" ]]; then
     # Suppress in outer shell if Zellij will take over
     if ! $_zellij_will_start; then
         local _show_motd=true
 
-        # If inside Zellij, only show once per session
+        # If inside Zellij, show MOTD at most once per 6h per session
+        # Uses stamp file mtime for cooldown tracking
         if [[ -n "$ZELLIJ" ]]; then
             local _stamp_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zellij-motd"
             local _stamp="$_stamp_dir/${ZELLIJ_SESSION_NAME}"
             if [[ -f "$_stamp" ]]; then
-                _show_motd=false
+                local _age=$(( $(date +%s) - $(date -r "$_stamp" +%s) ))
+                (( _age > 21600 )) || _show_motd=false
             fi
         fi
 
@@ -54,7 +57,7 @@ if [[ -z "$MOTD_SHOWN" ]]; then
 
             unset _motd_scripts _motd_local _motd_file
 
-            # Create stamp if inside Zellij (marks session as "MOTD shown")
+            # Create/update stamp if inside Zellij (mtime tracks last MOTD shown)
             if [[ -n "$ZELLIJ" ]]; then
                 mkdir -p "${_stamp_dir}"
                 touch "$_stamp"
@@ -66,9 +69,9 @@ if [[ -z "$MOTD_SHOWN" ]]; then
         # Inside Zellij: local only (sibling panes check stamp independently)
         # Outside Zellij: exported (child shells inherit)
         if [[ -n "$ZELLIJ" ]]; then
-            MOTD_SHOWN=1
+            DF_MOTD_SHOWN=1
         else
-            export MOTD_SHOWN=1
+            export DF_MOTD_SHOWN=1
         fi
     fi
 fi

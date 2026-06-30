@@ -97,9 +97,6 @@ known_hosts
 
 # Machine-specific Powerlevel10k config (each machine has its own theme settings)
 .config/zsh/.p10k.zsh
-.config/zsh/99-local.zsh.*
-.config/zsh/.zsh_history
-.config/zsh/.zcompdump*
 
 # ============================================================================
 # BACKUPS AND TEMPORARY FILES

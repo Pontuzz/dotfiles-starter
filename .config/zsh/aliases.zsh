@@ -9,7 +9,7 @@
 # - https://github.com/mathiasbynens/dotfiles/blob/master/.aliases
 
 ## Configuration ##
-alias ref="source ~/.config/zsh/.zshrc"
+alias ref="source \$ZDOTDIR/.zshrc"
 
 ## Navigation ##
 # Guarded: if zoxide isn't installed, system cd remains available

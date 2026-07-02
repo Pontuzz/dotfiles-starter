@@ -3,23 +3,11 @@
 export XDG_CONFIG_HOME="${HOME}/.config"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"
 
-# Editor settings (needed by many programs)
-export EDITOR=nano
-export VISUAL="$EDITOR"
-
-# Environment variables that need to be available to all shells
-export PYENV_ROOT="$HOME/.pyenv"
-export NVM_DIR="${XDG_CONFIG_HOME}/nvm"
-export FZF_DEFAULT_OPTS="--height 70% --reverse --inline-info --cycle"
-export DOTNET_ROOT="$HOME/.dotnet"
-
-# Zsh completion dump location (use XDG cache)
-export ZSH_COMPDUMP="$XDG_CACHE_HOME/zsh/.zcompdump-$HOST"
-
-# Custom zsh configuration path
-export ZSH_CUSTOM="$XDG_CONFIG_HOME/zsh/custom"
+# Python history (keep out of home dir)
+export PYTHON_HISTORY="${PYTHON_HISTORY:-$XDG_STATE_HOME/python_history}"
 
 # ============================================================================
 # PATH setup using zsh `path` array with deduplication
@@ -101,11 +89,4 @@ if [ -f "$HOME/.cargo/env" ]; then
   . "$HOME/.cargo/env"
 fi
 
-# ============================================================================
-# FZF initialization (if available)
-# ============================================================================
-if command -v fzf >/dev/null 2>&1; then
-  if fzf --version >/dev/null 2>&1; then
-    source <(fzf --zsh)
-  fi
-fi
+

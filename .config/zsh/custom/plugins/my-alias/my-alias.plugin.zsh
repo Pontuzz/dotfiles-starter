@@ -12,7 +12,7 @@
 # Note: Personal/infrastructure service aliases are kept in ~/.config/zsh/99-local.zsh
 # (gitignored for security). This file contains only portable aliases that work across machines.
 
-alias ref="source ~/.config/zsh/.zshrc"
+alias ref="source \$ZDOTDIR/.zshrc"
 
 ## Z ##
 alias cd='z'

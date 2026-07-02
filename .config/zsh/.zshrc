@@ -44,7 +44,7 @@ typeset _dotfiles_start=$EPOCHREALTIME
 # History settings - optimized for performance
 HISTSIZE=50000
 SAVEHIST=50000
-HISTFILE="$HOME/.local/share/history/zsh/.zsh_history"
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history/zsh/.zsh_history"
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_ALL_DUPS

@@ -87,7 +87,7 @@ See [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md) for detailed audit results.
 - **Tool check suppression**: Set `DOTFILES_IGNORE_MISSING_TOOLS` in `99-local.zsh` to silence reminders for tools you know are missing on a particular machine (e.g., `DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi"`).
 - **Symlink health check**: On each startup, verifies `~/.config/zsh`, `~/.zshenv`, `~/.bashrc` are properly linked. Silent when healthy; prints fix commands if broken.
 - **Zcompdump auto-rotation**: Stale `.zcompdump` files are pruned automatically (once per day), keeping the cache directory clean.
-- **HISTFILE migration**: Shell history is now stored at `~/.local/share/history/zsh/` (XDG-compliant), not in `ZDOTDIR`.
+- **HISTFILE migration**: Shell history is stored at `$XDG_STATE_HOME/history/zsh/` (`~/.local/state/history/zsh/`), not in `ZDOTDIR` or `~/`.
 
 ## 🎯 Quick Start
 

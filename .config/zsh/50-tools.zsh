@@ -31,7 +31,7 @@ if command -v thefuck >/dev/null 2>&1; then
   eval $(thefuck --alias FUCK)
 fi
 
-# FZF (fuzzy finder) - already sourced in .zshenv but ensure keybindings
+# FZF (fuzzy finder) - keybindings and completion
 if [ -f ~/.fzf.zsh ]; then
   source ~/.fzf.zsh
 elif command -v fzf >/dev/null 2>&1; then

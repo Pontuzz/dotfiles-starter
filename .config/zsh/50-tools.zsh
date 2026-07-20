@@ -38,3 +38,10 @@ elif command -v fzf >/dev/null 2>&1; then
   eval "$(fzf --zsh)"
 fi
 
+# Fnm (Fast Node Manager) - node version management
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env)"
+fi
+

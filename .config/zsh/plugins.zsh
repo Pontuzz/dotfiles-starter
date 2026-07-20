@@ -13,8 +13,6 @@ plugins=(
   # Custom working plugins
   lazy-loader
   performance-monitor
-  my-alias
-  my-ssh
   # Visual enhancements
   zsh-syntax-highlighting
   zsh-bat

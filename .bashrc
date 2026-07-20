@@ -25,16 +25,16 @@ shopt -s histappend
 shopt -s checkwinsize
 shopt -s expand_aliases
 
-# Load modular config files in order
-BASHRC_DIR="${XDG_CONFIG_HOME}/bash"
+# Dotfiles repo path
+DOTFILES="${DOTFILES:-$HOME/dotfiles}"
 
-# Source files in order of precedence
-if [[ -d "$BASHRC_DIR" ]]; then
+# Load modular config files from dotfiles repo
+if [[ -d "$DOTFILES/.bashrc.d" ]]; then
     # Load modules in numerical order
-    for config in "$BASHRC_DIR"/{00,10,20,30,40,50,60,70,80,90}-*.bash; do
+    for config in "$DOTFILES/.bashrc.d"/{00,10,20,30,40,50,60,70,80,90}-*.bash; do
         [[ -f "$config" ]] && source "$config"
     done
     
     # Load machine-specific config last (gitignored)
-    [[ -f "$BASHRC_DIR/99-local.bash" ]] && source "$BASHRC_DIR/99-local.bash"
+    [[ -f "$DOTFILES/.bashrc.d/99-local.bash" ]] && source "$DOTFILES/.bashrc.d/99-local.bash"
 fi

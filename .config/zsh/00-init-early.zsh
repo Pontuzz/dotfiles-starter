@@ -14,12 +14,12 @@ fi
 
 # ── Display MOTD ──
 # Strategy:
-#   - Outside Zellij (SSH, etc.): show MOTD every time   (DF_MOTD_SHOWN tracked)
-#   - Inside Zellij: show MOTD once per 6h per session   (stamp with mtime check)
+#   - Outside Zellij (SSH, etc.): show MOTD every time   (HIVE_MOTD_SHOWN tracked)
+#   - Inside Zellij: show MOTD once per 6h per session    (stamp with mtime check)
 #   - When Zellij will start (outer WSL shell): suppress  (would be eaten)
-# Uses DF_MOTD_SHOWN (not MOTD_SHOWN) to avoid collision with PAM pam_motd
-# This is NOT exported — each Zellij pane evaluates independently.
-if [[ -z "$DF_MOTD_SHOWN" ]]; then
+# Uses HIVE_MOTD_SHOWN instead of MOTD_SHOWN to avoid collision with PAM's
+# pam_motd module, which sets MOTD_SHOWN=pam in the SSH session environment.
+if [[ -z "$HIVE_MOTD_SHOWN" ]]; then
     # Suppress in outer shell if Zellij will take over
     if ! $_zellij_will_start; then
         local _show_motd=true
@@ -69,20 +69,17 @@ if [[ -z "$DF_MOTD_SHOWN" ]]; then
         # Inside Zellij: local only (sibling panes check stamp independently)
         # Outside Zellij: exported (child shells inherit)
         if [[ -n "$ZELLIJ" ]]; then
-            DF_MOTD_SHOWN=1
+            HIVE_MOTD_SHOWN=1
         else
-            export DF_MOTD_SHOWN=1
+            export HIVE_MOTD_SHOWN=1
         fi
     fi
 fi
 unset _zellij_will_start
 
-# SSH keychain setup (graceful fallback if not available)
-# Machine-specific setup should be in 99-local.zsh
-if command -v keychain >/dev/null 2>&1; then
-    # Only on systems where keychain is configured
-    # Default keychain setup moved to 99-local.zsh for portability
-    : # Placeholder - actual setup in machine-specific config
+# Auto-start Zellij in Windows Terminal (WSL-specific, interactive only)
+if [[ -o interactive ]] && [[ -n "$WT_SESSION" ]] && command -v zellij >/dev/null 2>&1; then 
+    eval "$(zellij setup --generate-auto-start zsh)"
 fi
 
 # Enable Powerlevel10k instant prompt

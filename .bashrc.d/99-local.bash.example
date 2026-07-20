@@ -9,7 +9,7 @@
 #
 # Example:
 #
-# if [[ "$MACHINE_TYPE" == "hivenet_client" ]]; then
+# if [[ "$MACHINE_TYPE" == "workstation" ]]; then
 #     export WORK_PATH="/path/to/work"
 #     alias work="cd $WORK_PATH"
 # fi

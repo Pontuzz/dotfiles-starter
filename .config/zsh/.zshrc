@@ -82,18 +82,14 @@ setopt ALWAYS_TO_END
 # Optional integrations (guard with existence checks)
 # ============================================================================
 
-# WARP shell integration
-printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh"}}\x9c'
+
+# WARP shell integration (WSL/Windows Terminal only)
+if [[ -n "$WT_SESSION" ]]; then
+  printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh"}}\x9c'
+fi
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
-
-# fnm
-FNM_PATH="$HOME/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "`fnm env`"
-fi
 
 # ============================================================================
 # Git hooks — auto-configure shared hooks for dotfiles repo
@@ -149,7 +145,7 @@ _dotfiles_check_links() {
   # Dotfiles repo itself
   if [[ ! -d "$DOTFILES/.git" ]]; then
     echo "⚠️  Dotfiles repo not found at $DOTFILES"
-    echo "   Fix: git clone git@github.com:Pontuzz/dotfiles.git $DOTFILES"
+    echo "   Fix: git clone git@github.com:[user]/dotfiles.git $DOTFILES"
     (( _issues++ ))
   fi
 
@@ -230,7 +226,8 @@ _dotfiles_check_tools() {
   fi
 
   # Tools that the dotfiles config wraps or aliases
-  for _tool in fzf zoxide bat lsd eza ripgrep thefuck navi; do
+  # Note: binary name may differ from package name (e.g. 'rg' is from 'ripgrep')
+  for _tool in fzf zoxide bat lsd eza rg thefuck navi; do
     if ! command -v "$_tool" >/dev/null 2>&1; then
       # Skip if user has explicitly ignored this tool
       if (( ${_ignore[(Ie)$_tool]} )); then
@@ -241,8 +238,24 @@ _dotfiles_check_tools() {
   done
 
   if (( ${#_missing} > 0 )); then
-    echo "💡 Optional tools not found: ${(j:, :)_missing}"
-    echo "   Install: brew install ${_missing[*]}"
+    # Map binary names to package/display names for accurate install hints
+    local -A _pkg_names
+    _pkg_names=(
+      rg        ripgrep
+      fzf       fzf
+      zoxide    zoxide
+      bat       bat
+      lsd       lsd
+      eza       eza
+      thefuck   thefuck
+      navi      navi
+    )
+    local -a _display
+    for _tool in "${_missing[@]}"; do
+      _display+=("${_pkg_names[$_tool]:-$_tool}")
+    done
+    echo "💡 Optional tools not found: ${(j:, :)_display}"
+    echo "   Install: brew install ${_display[*]}"
     echo "   (or use apt/pacman — see each tool's docs)"
   fi
 

@@ -36,8 +36,6 @@ This dotfiles repository uses a **clear separation between portable and personal
 ├── 99-local.zsh.example      # TEMPLATE: Shows what goes in personal config
 └── custom/plugins/
     ├── lazy-loader/          # Custom lazy loader plugin
-    ├── my-alias/             # Only portable aliases (no service-specific refs)
-    ├── my-ssh/               # SSH helper functions
     └── performance-monitor/  # Performance monitoring plugin
 ```
 
@@ -48,7 +46,7 @@ This dotfiles repository uses a **clear separation between portable and personal
 ├── 99-local.zsh              # YOUR MACHINE: Machine-specific config (GITIGNORED)
 │
 ├── .local/                    # Optional: Personal function overrides
-│   ├── aliases-services.zsh  # Service aliases ([internal-tool], avdump, etc.)
+│   ├── aliases-services.zsh  # Service aliases (hivedrop, avdump, etc.)
 │   ├── functions-personal.zsh # Personal function implementations
 │   └── env-local.zsh         # Local environment variables
 │
@@ -63,7 +61,7 @@ When you start a zsh session:
 
 ```
 1. .zshrc                  # Sources all modular files
-   ├── 20-machine-detect.zsh   # Sets: IS_HIVENET_CLIENT, IS_RASPBERRY_PI, etc.
+   ├── 20-machine-detect.zsh   # Sets: IS_RASPBERRY_PI, MACHINE_TYPE, etc.
    ├── 00-init-early.zsh       # Early setup (instant prompt, keychain)
    ├── plugins.zsh             # Loads Oh My Zsh + plugins
    ├── 40-env.zsh              # Portable environment variables
@@ -71,7 +69,7 @@ When you start a zsh session:
    ├── aliases.zsh             # Portable aliases
    ├── functions.zsh           # Portable functions
    ├── 99-local.zsh            # [YOUR MACHINE CONFIG - if exists]
-   │   ├── Machine-specific aliases ([internal-tool], avdump, etc.)
+   │   ├── Machine-specific aliases (work tools, local services, etc.)
    │   ├── Local environment setup
    │   └── Service-specific configuration
    │
@@ -135,9 +133,9 @@ fi
 **`99-local.zsh` - Machine-specific setup:**
 ```bash
 # Machine-specific aliases
-if [[ "$IS_HIVENET_CLIENT" == true ]]; then
-  alias [internal-tool]='telnet [your-internal-ip] 3335'
-  alias avdump='dotnet /mnt/g/02\ -\ Utilities/[media-tool]/...'
+if [[ "$MACHINE_TYPE" == "workstation" ]]; then
+  alias devbox='ssh dev.internal'
+  alias deploy='./deploy.sh'
 fi
 
 # Machine-specific environment
@@ -154,7 +152,7 @@ my_deploy() {
 ```bash
 # Internal service aliases
 alias myservice='ssh myservice.internal'
-alias internaldb='mysql -h [your-internal-ip] -u admin'
+alias internaldb='mysql -h 192.168.1.10 -u admin'
 
 # Service-specific helper
 connect_to_work() {
@@ -171,21 +169,19 @@ export DB_PASSWORD="secret123"
 
 ## Setting Up on a New Machine
 
-**For complete setup instructions, see [README.md Quick Start section](../../README.md#-quick-start) (lines 52-116).**
+**Quickest path:** Run `setup.sh` from the repo root — it handles cloning, deps, symlinks, submodules, and shell change automatically.
 
-This section explains the design; for step-by-step setup, refer to README.md.
+```bash
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
+~/dotfiles/setup.sh
+```
 
-### Quick Reference
+After `setup.sh` finishes:
+1. Create `~/.config/zsh/99-local.zsh` from `99-local.zsh.example` (see Machine-Specific section below)
+2. Optionally set up `~/.gitconfig` from `.gitconfig.example`
+3. Restart your shell: `exec zsh`
 
-The setup process in README.md covers:
-1. Clone with `--recursive` (gets submodules)
-2. Create symlinks to repo files
-3. Set up git and SSH config (optional)
-4. Create personal config from `99-local.zsh.example`
-5. Set up MOTD (optional)
-6. Restart shell
-
-After following README.md setup, the configuration flow works as documented in this file (lines 60-80).
+The configuration flow then works as documented above (lines 60-80).
 
 ## Design Principles
 
@@ -201,7 +197,7 @@ Comments in portable files indicate what goes where:
 # In aliases.zsh (portable):
 # Personal service aliases belong in ~/.config/zsh/99-local.zsh
 
-# In my-alias plugin (portable):
+# In aliases.zsh (portable):
 # Note: Infrastructure aliases are in 99-local.zsh (not tracked)
 ```
 
@@ -215,8 +211,8 @@ cp 99-local.zsh.example 99-local.zsh
 ### 5. **Platform Detection**
 Portable config adapts using detection flags:
 ```bash
-if [[ "$IS_HIVENET_CLIENT" == true ]]; then
-  # HiveNet-specific setup
+if [[ "$MACHINE_TYPE" == "workstation" ]]; then
+  # Workstation-specific setup
 fi
 
 if [[ "$IS_RASPBERRY_PI" == true ]]; then
@@ -250,9 +246,11 @@ git push
 
 # On other machines
 cd ~/dotfiles
-git pull
+git pull --recurse-submodules  # Submodules update automatically
 exec zsh  # Reload
 ```
+
+**Note:** The `hooks/post-merge` script also auto-initializes submodules on every pull, so even a plain `git pull` works. Using `--recurse-submodules` is the safest approach.
 
 ## Files Overview
 

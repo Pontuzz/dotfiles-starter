@@ -89,4 +89,5 @@ if [ -f "$HOME/.cargo/env" ]; then
   . "$HOME/.cargo/env"
 fi
 
-
+# opencode
+export PATH="$HOME/.opencode/bin:$PATH"

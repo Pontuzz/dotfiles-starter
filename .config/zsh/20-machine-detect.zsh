@@ -31,17 +31,18 @@ else
 fi
 
 # Hostname-based detection for specific machines
-# Customize the hostname patterns below for your environment
+# Customize these patterns for your machines
 HOSTNAME=$(hostname)
 case "$HOSTNAME" in
-  [work-machine]*)
-    export IS_WORK_MACHINE=true
-    export MACHINE_TYPE="work_machine"
-    ;;
-  raspberrypi*)
+  raspberrypi*|pi*)
     export IS_RASPBERRY_PI=true
     export MACHINE_TYPE="raspberry_pi"
     ;;
+  # Add your own hostname patterns here, e.g.:
+  # my-laptop-*)
+  #     export IS_WORK_LAPTOP=true
+  #     export MACHINE_TYPE="work_laptop"
+  #     ;;
   *)
     export MACHINE_TYPE="generic"
     ;;

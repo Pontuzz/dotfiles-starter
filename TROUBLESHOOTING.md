@@ -8,14 +8,14 @@ Common issues with the dotfiles configuration and how to fix them.
 
 ```bash
 # ❌ This no longer works (GitHub disabled password auth):
-git clone https://github.com/Pontuzz/dotfiles.git ~/dotfiles
+git clone https://github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
 
 # ✅ Use SSH instead (recommended):
-git clone --recursive git@github.com:Pontuzz/dotfiles.git ~/dotfiles
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
 # Requires SSH key configured: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
 
 # ✅ Or use Personal Access Token (PAT):
-git clone --recursive https://<PAT>@github.com/Pontuzz/dotfiles.git ~/dotfiles
+git clone --recursive https://<PAT>@github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
 # Get PAT: https://github.com/settings/tokens (check "repo" scope)
 ```
 
@@ -74,7 +74,7 @@ git submodule update --init --recursive
 
 # Or re-clone properly
 rm -rf ~/dotfiles
-git clone --recursive git@github.com:Pontuzz/dotfiles.git ~/dotfiles
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
 ```
 
 **Note:** The post-merge hook auto-initializes submodules on future pulls, so this should be a one-time issue.
@@ -131,6 +131,25 @@ If you see a "Shell startup took Xs" warning:
 3. Common culprits: keychain, slow tool initialization, large plugin sets
 4. The daily tool check will tell you which optional tools are missing
 
+## setup.sh Issues
+
+### setup.sh fails with "command not found: sudo"
+The script needs sudo for package installation. Run it as a normal user (not root) — it will prompt for sudo password when needed.
+
+### setup.sh says "unsupported package manager"
+The script supports apt, pacman, dnf, brew, and apk. If you're on something else (emerge, xbps, etc.), use the [Manual Setup](../README.md#manual-setup) approach or run `setup.sh --check` to see what would be done, then install deps yourself.
+
+### setup.sh doesn't change my shell
+`chsh` may prompt for a password. Run it manually if the script's `chsh` attempt is skipped:
+```bash
+chsh -s "$(which zsh)"
+```
+
+### Symlinks not created (permission denied)
+The script backs up existing files to `~/.dotfiles-backup-*` before creating symlinks. If a file is owned by root, run setup.sh without `sudo` but with your user — it handles user-level files. System-level zsh install (~200ms check) is the only sudo-dependent step.
+
+---
+
 ## Tool Check Flags Missing Tools
 
 The daily tool check looks for: `fzf zoxide bat lsd eza ripgrep thefuck navi`
@@ -153,5 +172,5 @@ The check will still run daily for other tools — only the listed ones are supp
 
 ---
 
-**Last updated:** June 7, 2026  
-**See also:** [README.md](README.md), [SETUP.md](.config/zsh/PORTABLE_SETUP.md)
+**Last updated:** July 19, 2026  
+**See also:** [README.md](README.md), [setup.sh](setup.sh), [PORTABLE_SETUP.md](.config/zsh/PORTABLE_SETUP.md)

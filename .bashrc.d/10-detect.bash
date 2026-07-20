@@ -25,15 +25,17 @@ fi
 
 # Detect machine type
 # Customize the hostname patterns below for your environment
+# Example: add your work laptop hostname pattern to set MACHINE_TYPE="work"
 MACHINE_TYPE="generic"
 if [[ -n "$HOSTNAME" ]]; then
     case "$HOSTNAME" in
-        *[work-machine]*|*work*)
-            MACHINE_TYPE="work_machine"
-            ;;
         *pi*|*raspberry*)
             MACHINE_TYPE="raspberry_pi"
             ;;
+        # Add your own patterns here, e.g.:
+        # my-laptop-*)
+        #     MACHINE_TYPE="work_laptop"
+        #     ;;
     esac
 fi
 

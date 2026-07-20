@@ -1,52 +1,39 @@
-# Portable Zsh Configuration Setup Guide
+# Portable Zsh Configuration — Reference Guide
 
-**For complete setup instructions, see [README.md Quick Start section](../../README.md#-quick-start) (lines 52-116).**
+**Quick setup:** `~/dotfiles/setup.sh` — one command, auto-detects your distro, handles everything.
 
-This guide provides additional context and details for the setup process. If you're setting up this dotfiles repo on a new machine, follow the steps in README.md first, then refer to this guide for explanations.
+This guide covers architecture, platform detection, file structure, and machine-specific config. For actual installation, use `setup.sh` (see [README.md Quick Start](../../README.md#-quick-start)).
 
 ---
 
 ## Setup Overview
 
-Your zsh configuration is **portable across WSL, Linux, macOS, and Raspberry Pi**. The setup process has 6 main steps:
+Your zsh configuration is **portable across WSL, Linux, macOS, and Raspberry Pi**. The `setup.sh` script handles installation automatically:
 
-## Quick Setup on New Machine
-
-### 1. Clone the dotfiles repo (WITH submodules!)
 ```bash
-# Clone with --recursive flag to get all submodules
-git clone --recursive https://github.com/Pontuzz/dotfiles-starter.git ~/dotfiles
-cd ~/dotfiles
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
+~/dotfiles/setup.sh
 ```
 
-**Important**: The `--recursive` flag is essential because the config uses git submodules for:
-- Oh My Zsh framework
-- External plugins (zsh-autosuggestions, zsh-syntax-highlighting, fzf-dir-navigator, etc.)
-- Powerlevel10k theme
+**What setup.sh does:**
+1. Clones/updates the repo and inits submodules
+2. Backs up existing config files
+3. Creates symlinks: `.zshenv`, `.bashrc`, `.profile`, `.gitconfig`, `.config/zsh`
+4. Installs required dependencies (zsh, git, curl) via your distro's package manager
+5. Installs optional tools: fzf, zoxide, bat, ripgrep, jq, lsd
+6. Changes your default shell to zsh
+7. Detects bundled OMZ — avoids redundant system install
 
-If you forgot `--recursive`:
+**Flags:**
+- `--check` — Read-only preview, no changes
+- `--minimal` — Skip optional tools, just shell + symlinks
+
+### What setup.sh DOESN'T do (you do these once per machine)
+
 ```bash
-cd ~/dotfiles
-git submodule update --init --recursive
-```
-
-### 2. Create symlinks (or copy files)
-```bash
-# Symlink approach (recommended)
-ln -s ~/dotfiles/.zshenv ~/.zshenv
-ln -s ~/dotfiles/.config/zsh ~/.config/zsh
-
-# Or copy if symlinks don't work on your system
-cp -r ~/dotfiles/.config/zsh ~/.config/zsh
-cp ~/dotfiles/.zshenv ~/.zshenv
-```
-
-### 3. Set up Git and SSH config (optional but recommended)
-```bash
-# Git config - for version control credentials
+# 1. Set up Git config with your identity
 cp ~/dotfiles/.gitconfig.example ~/.gitconfig
-nano ~/.gitconfig
-# Add your name, email, and any machine-specific Git settings
+nano ~/.gitconfig  # Add your name and email
 
 # SSH config - for host management and credentials
 mkdir -p ~/.ssh
@@ -57,30 +44,17 @@ nano ~/.ssh/config
 # Add your SSH hosts (work servers, Pi, etc.)
 ```
 
-### 4. Set up machine-specific Zsh config
+### 2. Create machine-specific config
 ```bash
-# Copy the example local config
 cp ~/.config/zsh/99-local.zsh.example ~/.config/zsh/99-local.zsh
-
-# Edit it with your machine-specific settings
 nano ~/.config/zsh/99-local.zsh
 ```
 
-### 5. Set up custom MOTD (optional)
+### 3. (Optional) Set up custom MOTD
 ```bash
-# Copy the example custom message file
 cp ~/.config/motd/20-custom.sh.example ~/.config/motd/20-custom.sh
-
-# Edit to add your own messages
-nano ~/.config/motd/20-custom.sh
-
-# Make it executable
 chmod +x ~/.config/motd/20-custom.sh
-```
-
-### 6. Restart your shell
-```bash
-exec zsh
+nano ~/.config/motd/20-custom.sh
 ```
 
 ## File Structure
@@ -102,8 +76,6 @@ exec zsh
 └── custom/                   # Custom plugins and themes
     ├── plugins/              # Custom and external plugins
     │   ├── lazy-loader/      # Custom: Lazy loading for heavy tools
-    │   ├── my-alias/         # Custom: Alias management
-    │   ├── my-ssh/           # Custom: SSH setup
     │   ├── performance-monitor/ # Custom: Performance monitoring
     │   ├── fzf-dir-navigator/   # Submodule: Directory fuzzy finder
     │   ├── zsh-autosuggestions/ # Submodule: Command suggestions
@@ -126,8 +98,7 @@ IS_MACOS=true/false       # macOS
 IS_ARM=true/false         # ARM architecture (Raspberry Pi, Apple Silicon)
 
 # Machine-Specific Detection (hostname-based)
-MACHINE_TYPE=string       # "hivenet_client", "raspberry_pi", or "generic"
-IS_HIVENET_CLIENT=true/false    # If hostname starts with HC01-D
+MACHINE_TYPE=string       # "workstation", "server", "raspberry_pi", or "generic"
 IS_RASPBERRY_PI=true/false      # If hostname contains "raspberrypi"
 ```
 
@@ -145,15 +116,15 @@ Example:
 ```bash
 # ~/.config/zsh/99-local.zsh (GITIGNORED - safe for secrets)
 
-# HiveNet Client setup
-if [[ "$MACHINE_TYPE" == "hivenet_client" ]] || [[ "$IS_HIVENET_CLIENT" == true ]]; then
+# Workstation setup
+if [[ "$MACHINE_TYPE" == "workstation" ]]; then
   keychain ~/.ssh/id_rsa --agents ssh -q
-  alias [internal-tool]='telnet [your-internal-ip] 3335'
-  alias avdump='dotnet /mnt/g/path/to/avdump2'
+  alias devbox='ssh dev.internal'
+  alias deploy='./deploy.sh'
 fi
 
 # Raspberry Pi setup
-if [[ "$MACHINE_TYPE" == "raspberry_pi" ]] || [[ "$IS_RASPBERRY_PI" == true ]]; then
+if [[ "$MACHINE_TYPE" == "raspberry_pi" ]]; then
   alias piupdate='sudo apt update && sudo apt upgrade -y'
   alias piclean='sudo apt autoremove && sudo apt autoclean'
 fi
@@ -193,10 +164,12 @@ alias myrepo='cd /path/to/my/repo'
 
 ## Tested On
 
-- ✅ **WSL2 (Ubuntu)** - Fully tested and working
-- ✅ **Raspberry Pi 3 (Raspbian/Debian)** - Fully tested and working
-- ⚠️ **macOS** - Should work but untested on current version
-- ⚠️ **Generic Linux** - Should work but untested on current version
+- ✅ **WSL2 (Ubuntu)** — Fully tested and working
+- ✅ **Debian 13 (trixie, arm64/armhf)** — setup.sh verified on Raspberry Pi 3
+- ✅ **Raspberry Pi OS** — Fully tested and working
+- ✅ **Arch Linux** — setup.sh detects pacman
+- ✅ **Fedora** — setup.sh detects dnf
+- ⚠️ **macOS** — setup.sh detects brew, should work (untested on current version)
 
 If you test on a new platform, please report any issues!
 
@@ -251,6 +224,8 @@ git submodule update --init --recursive
 git submodule status
 ```
 
+**Tip:** After the first fix, the post-merge hook (`hooks/post-merge`) runs automatically on every `git pull`, so submodules stay in sync from then on.
+
 ### Missing .gitignore entry
 Add to `.gitignore`:
 ```
@@ -258,42 +233,35 @@ Add to `.gitignore`:
 .config/secrets/
 ```
 
-## Next Steps
+## After Running setup.sh
 
-1. **Install required tools** (optional but recommended):
+After `setup.sh` completes, do these once per machine:
+
+1. **Set up your identity in Git:**
    ```bash
-   # On Linux/WSL with apt
-   sudo apt install zsh fzf ripgrep bat
-
-   # On macOS
-   brew install zsh fzf ripgrep bat
-
-   # On Pi with apt
-   sudo apt install zsh fzf ripgrep bat
+   cp ~/dotfiles/.gitconfig.example ~/.gitconfig
+   nano ~/.gitconfig   # Add your name and email
    ```
 
-2. **Install Oh My Zsh** (if not already cloned):
+2. **Configure machine-specific settings:**
    ```bash
-   git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.config/zsh/.oh-my-zsh
+   cp ~/.config/zsh/99-local.zsh.example ~/.config/zsh/99-local.zsh
+   nano ~/.config/zsh/99-local.zsh
    ```
 
-3. **Install custom plugins** (if not in repo):
+3. **Install Powerlevel10k fonts** (for prompt icons to render correctly):
+   - [Meslo Nerd Font](https://github.com/romkatv/powerlevel10k#fonts) (recommended)
+   - Or configure `.p10k.zsh` to use your system font
+
+4. **Restart your shell:**
    ```bash
-   cd ~/.config/zsh/custom/plugins
-   git clone https://github.com/zsh-users/zsh-autosuggestions.git
-   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
+   exec zsh
    ```
-
-4. **Install Powerlevel10k fonts** (for prompt to look right):
-   - Download from: https://github.com/romkatv/powerlevel10k#manual-font-installation
-   - Or use system fonts and update `.p10k.zsh`
-
-5. **Set up machine-specific config** in `99-local.zsh`
 
 ## Notes
 
-- Keep `99-local.zsh` out of git (it's already in `.gitignore`)
+- `99-local.zsh` is in `.gitignore` — safe for machine-specific settings and secrets
 - Use `99-local.zsh.example` as a template
-- All tool initializations check for command availability first
+- All tool initializations check for `command -v` before use — missing tools won't break anything
 - Configuration is modular: remove files you don't need
-- History is shared across all shells (SHARE_HISTORY option)
+- History is shared across all shells (SHARE_HISTORY option in plugins.zsh)

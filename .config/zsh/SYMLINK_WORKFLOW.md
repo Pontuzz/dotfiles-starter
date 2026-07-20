@@ -2,6 +2,7 @@
 
 ## TL;DR
 
+- **New machine?** Run `~/dotfiles/setup.sh` — handles all symlinks automatically
 - **Real files live in**: `~/dotfiles/.config/zsh/`
 - **Symlink lives in**: `~/.config/zsh` (points to above)
 - **Always edit**: `~/dotfiles/...` (the repo)
@@ -67,6 +68,16 @@ nano ~/dotfiles/.config/zsh/aliases.zsh
 | Environment | `~/.zshenv` | Global env setup | `~/dotfiles/.zshenv` |
 
 ## Workflows
+
+### Workflow 0: New Machine Setup
+
+```bash
+# One-command setup — setup.sh handles all symlinks automatically
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
+~/dotfiles/setup.sh
+```
+
+After setup.sh completes, all symlinks are in place. Jump to Workflow 1 for day-to-day editing.
 
 ### Workflow 1: Edit & Reload (Most Common)
 
@@ -186,7 +197,7 @@ git diff .config/zsh/aliases.zsh      # Shows exact changes
 ### "How do I verify the symlink is correct?"
 ```bash
 ls -l ~/.config/zsh
-# Should show: /home/[username]/.config/zsh -> /home/[username]/dotfiles/.config/zsh
+# Should show: ~/.config/zsh -> ~/dotfiles/.config/zsh
 
 # If not, recreate it:
 rm ~/.config/zsh

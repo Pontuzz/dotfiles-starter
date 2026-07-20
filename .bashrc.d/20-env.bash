@@ -14,7 +14,7 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-# Tools
+# Tools — prefer nvim/vim if available
 if command -v nvim &>/dev/null; then
     export EDITOR="nvim"
     export VISUAL="nvim"

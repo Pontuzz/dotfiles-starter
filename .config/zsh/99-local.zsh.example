@@ -13,22 +13,25 @@
 
 # plugins=(${plugins[@]/zsh-lsd})
 
+# Suppress daily "tool not found" reminders for tools you know are missing
+# Space-separated list of tool names to stop being reminded about
+# Example: DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi eza ripgrep"
+# Uncomment and adjust for your machine:
+# DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi"
+
 # Disable specific tools by setting environment variables
 # Example: export THEFUCK_DISABLED="true"
 # Uncomment as needed:
 
 # export THEFUCK_DISABLED="true"
 
-# Suppress missing-tool warnings for tools you know you don't need
-# Example: DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi eza ripgrep"
-# DOTFILES_IGNORE_MISSING_TOOLS=""
-
 # ============================================================================
-# Machine-Specific Aliases
+# Machine-Specific Aliases (per-machine)
 # ============================================================================
-# Example aliases for specific machines:
-# if [[ "$(hostname)" == "my-machine" ]]; then
-#   alias myalias='some-command'
+# Add your own machine-specific aliases here using detection flags:
+#
+# if [[ "$MACHINE_TYPE" == "work_laptop" ]]; then
+#   alias deploy='ssh [user]@[server]'
 # fi
 
 # Raspberry Pi specific aliases
@@ -47,10 +50,51 @@ fi
 # ============================================================================
 # Machine-Specific SSH/Keychain Setup
 # ============================================================================
+# SSH_AUTH_SOCK persistence helper
+# On WSL2, the SSH agent socket changes between sessions, so we need to handle
+# both continuing an existing session and starting a new one
+_setup_ssh_agent() {
+    # Check if SSH_AUTH_SOCK exists and the agent is still running
+    if [[ -n "$SSH_AUTH_SOCK" ]] && ssh-add -l >/dev/null 2>&1; then
+        # Agent is still running, nothing to do
+        return 0
+    fi
+    
+    # Check for existing agent socket from previous session
+    # The (N) flag tells zsh to return empty list if no matches found (don't error)
+    local sock
+    for sock in /tmp/ssh-*/agent.*(N); do
+        if [[ -S "$sock" ]] && ssh-add -S "$sock" -l >/dev/null 2>&1; then
+            export SSH_AUTH_SOCK="$sock"
+            return 0
+        fi
+    done
+    
+    # No existing agent found, start a new one
+    if ! pgrep -u "$USER" ssh-agent > /dev/null 2>&1; then
+        eval "$(ssh-agent -s)" > /dev/null 2>&1
+    fi
+}
+
+# Initialize SSH agent on shell start
+_setup_ssh_agent
+
+# Add SSH keys - will prompt for passphrase on first use in interactive shell
+if [[ -f ~/.ssh/id_rsa ]] || [[ -f ~/.ssh/id_ed25519 ]]; then
+    # Check if key is already in agent
+    if ! ssh-add -l 2>/dev/null | grep -q "$(basename ~/.ssh/id_*)" 2>/dev/null; then
+        # Key not loaded yet; try to add it
+        # In interactive shells, this will prompt for passphrase
+        # In non-interactive contexts, it will fail silently (expected)
+        ssh-add -t 3600 ~/.ssh/id_* 2>/dev/null || true
+    fi
+fi
+
 # Only load keychain on systems where it's needed and installed
 if command -v keychain >/dev/null 2>&1; then
-  # Uncomment if keychain is available
-  # keychain ~/.ssh/id_rsa --agents ssh -q
+  # keychain auto-loads keys and manages the agent lifecycle
+  # This is useful on systems where it's installed
+  eval "$(keychain --eval --agents ssh --inherit any ~/.ssh/id_* 2>/dev/null)" || true
 fi
 
 # ============================================================================

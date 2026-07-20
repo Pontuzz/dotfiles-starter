@@ -1,0 +1,37 @@
+# Global ignore for sensitive files and local state
+
+# Secrets and credentials
+*.env
+*.env.*
+credentials.*
+.config/secrets/
+
+# Keys / certs
+*.key
+*.pem
+*.p12
+*.crt
+*.asc
+*.gpg
+
+# Host and editor files
+.DS_Store
+Thumbs.db
+.vscode-server/
+.vscode/
+.idea/
+
+# Shell history
+.zsh_history
+.bash_history
+*history*
+
+# Logs, caches
+.cache/
+.local/share/weechat/logs/
+**/logs/**
+*.log
+
+# Private config dirs
+.gnupg/
+.ssh/id_*

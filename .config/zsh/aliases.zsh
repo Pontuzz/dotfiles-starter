@@ -20,14 +20,19 @@ fi
 alias cht="cht.sh --shell"
 
 ## List utilities (lsd/eza) ##
-alias ls='lsd'
-alias l='lsd -l'
-alias la='lsd -a'
-alias lla='lsd -la'
-alias lt='lsd --tree --depth 3'
-alias ltn='lsd --tree'  # no depth limit (use carefully)
-alias ll="eza -alh"
-alias ett="eza --tree"
+# Guarded: if tool not installed, system ls remains available
+if command -v lsd >/dev/null 2>&1; then
+  alias ls='lsd'
+  alias l='lsd -l'
+  alias la='lsd -a'
+  alias lla='lsd -la'
+  alias lt='lsd --tree --depth 3'
+  alias ltn='lsd --tree'  # no depth limit (use carefully)
+fi
+if command -v eza >/dev/null 2>&1; then
+  alias ll="eza -alh"
+  alias ett="eza --tree"
+fi
 
 ## Editors ##
 alias enw='emacs -nw'
@@ -35,7 +40,7 @@ alias vi=vim
 alias nv=nvim
 
 ## Fun utilities ##
-alias wttr="curl https://wttr.in"  # auto-detect location, or use wttr.in/[your-city]
+alias wttr="curl https://wttr.in/Norrköping"
 
 ## Single character shortcuts ##
 alias _="sudo"
@@ -46,7 +51,7 @@ alias ping='ping -c 5'
 alias grep="command grep --exclude-dir={.git,.vscode}"
 
 ## Directories ##
-alias secrets="cd ${XDG_DATA_HOME:-~/.local/share}/secrets"
+alias secrets='cd ${XDG_DATA_HOME:-$HOME/.local/share}/secrets'
 
 ## Typo fixes ##
 alias get=git
@@ -96,7 +101,6 @@ alias autorotate="jhead -autorot"
 ## Dotfiles ##
 alias dotf='cd "$DOTFILES"'
 alias dotfed='cd "$DOTFILES" && ${VISUAL:-${EDITOR:-nano}} .'
-alias dotfl="cd \$DOTFILES/local"
 alias zdot='cd $ZDOTDIR'
 
 ## Java ##

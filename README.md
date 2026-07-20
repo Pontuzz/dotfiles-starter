@@ -1,225 +1,118 @@
 # Dotfiles Starter
 
-A modular, portable zsh configuration template that works across **WSL2, Linux, macOS, and Raspberry Pi**. Fork it, customize it, make it yours.
+A portable zsh configuration template for **WSL2, Linux, macOS, and Raspberry Pi**. Fork it, customize it, make it yours.
 
 ## Quick Start
 
 ```bash
-# Clone and set up — one command does it all
 git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
 ~/dotfiles/setup.sh
 ```
 
-**What `setup.sh` handles automatically:**
-- Detects your distro (apt/pacman/dnf/brew/apk) and installs zsh, git, curl if missing
-- Inits all git submodules (Oh My Zsh, plugins, powerlevel10k theme)
-- Creates symlinks: `.zshenv`, `.bashrc`, `.profile`, `.gitconfig`, `.config/zsh`
-- Backs up any existing config before overwriting
-- Installs optional tools: fzf, zoxide, bat, ripgrep, jq, lsd
-- Changes default shell to zsh
+setup.sh auto-detects your distro (apt/pacman/dnf/brew/apk), installs zsh/git/curl if missing, inits submodules (Oh My Zsh + 5 plugins + p10k), creates symlinks, installs optional tools (fzf, zoxide, bat, ripgrep, jq, lsd), and changes your shell to zsh. Idempotent — `--check` for dry run, `--minimal` for shell-only.
 
-**Flags:**
-
-| Flag | Purpose |
-|------|---------|
-| `--check` | Read-only preview (no changes) |
-| `--minimal` | Skip optional tools, just shell + symlinks |
-
-Then set up your machine-specific config:
-
+**One-time per machine:**
 ```bash
 cp ~/.config/zsh/99-local.zsh.example ~/.config/zsh/99-local.zsh
 cp ~/dotfiles/.gitconfig.example ~/.gitconfig
-nano ~/.config/zsh/99-local.zsh   # Add your settings
-nano ~/.gitconfig                  # Add your name and email
+exec zsh
 ```
 
-Restart your shell: `exec zsh`
-
----
-
-## What's Included
-
-| Category | Contents |
-|----------|----------|
-| **Shell** | Zsh + Bash config, modular `.zshrc` with ordered file sourcing |
-| **Prompt** | Powerlevel10k with classic style, Nerd Font icons |
-| **Plugins** | Syntax highlighting, autosuggestions, fzf, bat, lsd integrations |
-| **Tools** | fzf, zoxide, atuin, thefuck, navi, fnm — all gracefully handled if missing |
-| **MOTD** | Adaptive-width system dashboard (figlet banner, host info, resource bars) |
-| **Platform detection** | Auto-detects WSL2, Linux, macOS, ARM, Raspberry Pi |
-| **Git** | Templated `.gitconfig` and `.ssh/config` (credentials stay local) |
-
----
-
-## Architecture
+## Layout
 
 ```
 dotfiles/
-├── setup.sh                         # One-command bootstrap
-├── .zshenv                          # Global env setup (sourced by all shells)
-├── .bashrc                          # Bash config hub
-├── .profile                         # Login shell config
-├── .gitconfig.example               # Template for ~/.gitconfig
+├── setup.sh                         # Bootstrap
+├── .zshenv                          # Global env (all shells) — XDG dirs, PATH
+├── .bashrc → .bashrc.d/             # Bash hub — 6 modular files
+├── .profile                         # Login shell
 │
-├── .config/
-│   ├── zsh/                         # Main zsh configuration
-│   │   ├── .zshrc                   # Sources all modular files in order
-│   │   ├── .p10k.zsh                # Powerlevel10k prompt config
-│   │   ├── 00-init-early.zsh        # MOTD, instant prompt, Zellij
-│   │   ├── 20-machine-detect.zsh    # Platform detection flags
-│   │   ├── plugins.zsh              # Oh My Zsh plugins + completions
-│   │   ├── 40-env.zsh               # Environment variables
-│   │   ├── 50-tools.zsh             # Tool initializations
-│   │   ├── aliases.zsh              # Portable aliases
-│   │   ├── functions.zsh            # Helper functions
-│   │   ├── 99-local.zsh.example     # Template for machine-specific config
-│   │   ├── .oh-my-zsh/              # Oh My Zsh (submodule)
-│   │   └── custom/plugins/          # 2 custom + 5 external plugins
-│   │
-│   └── motd/                        # User-level MOTD scripts
-│       ├── 10-motd.sh               # System dashboard (adaptive width)
-│       └── 20-custom.sh.example     # Template for custom messages
+├── .config/zsh/                     # Primary zsh configuration
+│   ├── .zshrc                       #   Sources in order + health checks + tools check
+│   ├── .p10k.zsh                    #   Powerlevel10k prompt
+│   ├── 00-init-early.zsh            #   MOTD, Zellij, instant prompt
+│   ├── 20-machine-detect.zsh        #   Platform flags (IS_WSL, IS_LINUX, MACHINE_TYPE, etc.)
+│   ├── plugins.zsh                  #   OMZ + 5 external + 2 custom plugins, completions
+│   ├── 40-env.zsh                   #   EDITOR, NVM_DIR, WSL PATH filter
+│   ├── 50-tools.zsh                 #   brew, zoxide, atuin, thefuck, fzf, fnm
+│   ├── aliases.zsh                  #   40+ aliases (lsd/eza/cd guarded)
+│   ├── functions.zsh                #   Helper functions
+│   ├── 99-local.zsh                 #   [GITIGNORED] Machine override
+│   └── 99-local.zsh.example         #   Template
 │
-├── .bashrc.d/                       # Modular bash config (mirrors zsh)
-├── .ssh/config.example              # Template for ~/.ssh/config
-└── hooks/post-merge                 # Auto-updates submodules on pull
+├── .bashrc.d/                       # Bash mirrors zsh structure
+├── .config/motd/                    # Adaptive-width system dashboard
+├── .gitconfig.example               # Template (real .gitconfig gitignored)
+├── .ssh/config.example              # Template (real config gitignored)
+└── hooks/post-merge                 # Auto-inits submodules on pull
 ```
 
-### Configuration Flow
+### Sourcing Order
 
 ```
-.zshrc → 00-init-early → 20-machine-detect → plugins → 40-env → 50-tools → aliases → functions → 99-local (gitignored)
+.zshrc → 20-machine-detect → 00-init-early → plugins.zsh → 40-env → 50-tools → aliases → functions → 99-local
 ```
 
-Each file has a specific purpose. Machine-specific overrides go in `99-local.zsh` (gitignored, stays on your machine).
+Each file handles one concern — platform detection, plugins, env vars, tool init, aliases, functions. Machine overrides in `99-local.zsh` (gitignored, sourced last).
 
----
+## Configuration
 
-## Customizing for Your Machine
+### Platform Detection
 
-### 1. Fork This Repo
-
-Click "Fork" on GitHub, then clone your fork:
+Available in `99-local.zsh`:
 
 ```bash
-git clone --recursive git@github.com:YOUR_USER/dotfiles.git ~/dotfiles
+IS_WSL              IS_LINUX            IS_MACOS            IS_ARM
+IS_RASPBERRY_PI     MACHINE_TYPE        # "raspberry_pi", "workstation", "server", or "generic"
 ```
 
-### 2. Set Up Machine-Specific Config
+### Key .zshrc Behaviors
 
-**Required:** Create `~/.config/zsh/99-local.zsh` from the example template:
+| Feature | What | Frequency |
+|---------|------|-----------|
+| **Startup guard** | Warns if shell init > 3s | Every shell |
+| **Tool check** | Lists missing optional tools | 1x/day (stamp file) |
+| **Tool suppression** | `DOTFILES_IGNORE_MISSING_TOOLS` | Per-machine in 99-local.zsh |
+| **Symlink health** | Verifies critical symlinks | Every shell |
+| **Git hooks** | Auto-configures post-merge for submodules | 1x ever |
+| **MOTD** | Adaptive dashboard (3 width tiers) | Once/session |
+| **History** | SHARE_HISTORY, XDG path, 50k entries | Persistent |
 
-```bash
-cp ~/.config/zsh/99-local.zsh.example ~/.config/zsh/99-local.zsh
-nano ~/.config/zsh/99-local.zsh
-```
+### Machine-Specific Config
 
-This is where you put:
-- SSH key management (keychain, ssh-agent)
-- Internal IPs or hostnames
-- API tokens or credentials
-- Work-specific paths and aliases
-- Hardware-specific settings
+`99-local.zsh` is gitignored and sourced last — for SSH key management, internal IPs, API tokens, work-specific aliases, hardware settings. `.gitconfig` and `.ssh/config` are also gitignored — copy from `.example` templates.
 
-The file is gitignored — safe for secrets, never gets committed.
+### Submodules
 
-### 3. Set Up Git
+| Component | Path |
+|-----------|------|
+| Oh My Zsh | `.config/zsh/.oh-my-zsh` |
+| fzf-dir-navigator, zsh-autosuggestions, zsh-bat, zsh-lsd, zsh-syntax-highlighting | `.config/zsh/custom/plugins/` |
+| powerlevel10k | `.config/zsh/custom/themes/` |
+| lazy-loader, performance-monitor | Embedded (in-repo) |
 
-```bash
-cp ~/dotfiles/.gitconfig.example ~/.gitconfig
-nano ~/.gitconfig   # Add your name and email
-```
+Clone with `--recursive`. Post-merge hook auto-inits on `git pull`.
 
-Your `~/.gitconfig` is gitignored too — each machine can have different credentials.
+## Documentation
 
-### 4. Install Powerlevel10k Font
+| Doc | Covers |
+|-----|--------|
+| [ARCHITECTURE.md](.config/zsh/ARCHITECTURE.md) | Design, file purposes, portable vs personal separation |
+| [PORTABLE_SETUP.md](.config/zsh/PORTABLE_SETUP.md) | Setup reference, platform detection, file structure |
+| [SYMLINK_WORKFLOW.md](.config/zsh/SYMLINK_WORKFLOW.md) | Editing workflow, symlink mechanics |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Auth, slow startup, submodule issues |
 
-For the prompt icons to render correctly, install a [Nerd Font](https://github.com/romkatv/powerlevel10k#fonts) (Meslo Nerd Font recommended).
-
----
-
-## Platform Detection
-
-The config automatically detects your environment and sets these flags (usable in `99-local.zsh`):
-
-```bash
-IS_WSL=true/false         # Windows Subsystem for Linux
-IS_LINUX=true/false       # Any Linux system
-IS_MACOS=true/false       # macOS
-IS_ARM=true/false         # ARM architecture (Pi, Apple Silicon)
-IS_RASPBERRY_PI=true/false
-MACHINE_TYPE=string       # "raspberry_pi", "workstation", "server", or "generic"
-```
-
-Example usage in `99-local.zsh`:
-
-```bash
-if [[ "$IS_RASPBERRY_PI" == true ]]; then
-  alias piupdate='sudo apt update && sudo apt upgrade -y'
-fi
-
-if [[ "$IS_WSL" == true ]]; then
-  export BROWSER="explorer.exe"
-fi
-```
-
----
-
-## Submodules
-
-This repo uses git submodules for external dependencies:
-
-- **Oh My Zsh** — Plugin framework (`.config/zsh/.oh-my-zsh`)
-- **5 plugins** — fzf-dir-navigator, zsh-autosuggestions, zsh-bat, zsh-lsd, zsh-syntax-highlighting
-- **1 theme** — powerlevel10k
-
-Clone with `--recursive` to get everything at once. The post-merge hook auto-initializes submodules on every `git pull`, so you never need to remember.
-
----
-
-## Dependencies
-
-**Required:** zsh, git (both auto-installed by setup.sh)
-
-**Optional (config works without them):**
-fzf, zoxide, bat, ripgrep, lsd, eza, atuin, thefuck, navi, brew, keychain, hyperfine, jq
-
-Missing tools won't break anything — every integration uses `command -v` checks. Suppress reminders for known-missing tools by adding to `99-local.zsh`:
-
-```bash
-DOTFILES_IGNORE_MISSING_TOOLS="thefuck navi eza"
-```
-
----
+**Dependencies:** Required — zsh, git. Optional (config survives without) — fzf, zoxide, bat, ripgrep, lsd, eza, atuin, thefuck, navi, brew, keychain, jq. All tool integrations use `command -v` guards.
 
 ## Updating
 
 ```bash
-cd ~/dotfiles
-git pull                             # post-merge hook auto-updates submodules
-exec zsh                             # Reload to apply changes
+cd ~/dotfiles && git pull          # post-merge inits submodules
+exec zsh
 ```
 
 ---
 
-## Tested On
-
-- WSL2 (Ubuntu)
-- Debian 13 (trixie, arm64/armhf)
-- Raspberry Pi OS
-- Arch Linux
-- Fedora
-- macOS (brew, untested on current version)
-
----
-
-## License
-
-MIT — See [LICENSE](LICENSE). Use it freely, fork it, build on it.
-
----
-
-**Status**: ✅ Stable and portable  
-**Tested on**: WSL2, Debian 13, Raspberry Pi OS, Arch, Fedora  
-**Last updated**: July 20, 2026
+**License:** MIT  
+**Tested on:** WSL2 (Ubuntu), Debian 13, Raspberry Pi OS, Arch, Fedora  
+**Last updated:** July 20, 2026

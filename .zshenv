@@ -35,7 +35,7 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   old_IFS="$IFS"
   IFS=':'
   filtered=""
-  for p in $PATH; do
+  for p in ${=PATH}; do
     # Skip Windows-style paths (backslashes or drive letters)
     if [[ "$p" == *\\* ]] || [[ "$p" == [A-Za-z]:\\* ]]; then
       continue

@@ -16,12 +16,12 @@ Your home directory:
 
 Real files:
 ~/dotfiles/.config/zsh/.zshrc          ← REAL FILE (this is what git tracks)
-~/dotfiles/.config/zsh/aliases.zsh     ← REAL FILE
+~/dotfiles/.config/zsh/80-aliases.zsh     ← REAL FILE
 ~/dotfiles/.config/zsh/*.zsh           ← REAL FILES
 
 Symlinks (not real files):
 ~/.config/zsh/.zshrc                   ← symlink to above
-~/.config/zsh/aliases.zsh              ← symlink to above
+~/.config/zsh/80-aliases.zsh              ← symlink to above
 ```
 
 ## Editing Files
@@ -31,13 +31,13 @@ Symlinks (not real files):
 Edit files in the repo directly:
 ```bash
 # Edit in the repo
-nano ~/dotfiles/.config/zsh/aliases.zsh
+nano ~/dotfiles/.config/zsh/80-aliases.zsh
 
 # Reload your shell to apply changes
 source ~/.zshrc
 
 # Check in git for changes
-cd ~/dotfiles && git diff .config/zsh/aliases.zsh
+cd ~/dotfiles && git diff .config/zsh/80-aliases.zsh
 ```
 
 ### ❌ What NOT to Do
@@ -45,11 +45,11 @@ cd ~/dotfiles && git diff .config/zsh/aliases.zsh
 Don't try to edit via the symlink location:
 ```bash
 # This works BUT is confusing
-nano ~/.config/zsh/aliases.zsh
+nano ~/.config/zsh/80-aliases.zsh
 # It will edit the file, but through the symlink
 
 # Better to edit directly in repo
-nano ~/dotfiles/.config/zsh/aliases.zsh
+nano ~/dotfiles/.config/zsh/80-aliases.zsh
 ```
 
 ## File Locations Cheat Sheet
@@ -57,13 +57,13 @@ nano ~/dotfiles/.config/zsh/aliases.zsh
 | File | Location | Purpose | Edit Here |
 |------|----------|---------|-----------|
 | Main config | `~/.config/zsh/.zshrc` | Loads all other files | `~/dotfiles/.config/zsh/.zshrc` |
-| Early init | `~/.config/zsh/00-init-early.zsh` | Instant prompt, zellij | `~/dotfiles/.config/zsh/00-init-early.zsh` |
-| Platform detect | `~/.config/zsh/20-machine-detect.zsh` | Auto-detect OS/machine | `~/dotfiles/.config/zsh/20-machine-detect.zsh` |
-| Plugins | `~/.config/zsh/plugins.zsh` | Oh My Zsh setup | `~/dotfiles/.config/zsh/plugins.zsh` |
+| Early init | `~/.config/zsh/20-init-early.zsh` | Instant prompt, zellij | `~/dotfiles/.config/zsh/20-init-early.zsh` |
+| Platform detect | `~/.config/zsh/10-machine-detect.zsh` | Auto-detect OS/machine | `~/dotfiles/.config/zsh/10-machine-detect.zsh` |
+| Plugins | `~/.config/zsh/30-plugins.zsh` | Oh My Zsh setup | `~/dotfiles/.config/zsh/30-plugins.zsh` |
 | Environment | `~/.config/zsh/40-env.zsh` | ENV variables | `~/dotfiles/.config/zsh/40-env.zsh` |
 | Tools | `~/.config/zsh/50-tools.zsh` | Tool init (fzf, brew) | `~/dotfiles/.config/zsh/50-tools.zsh` |
-| Aliases | `~/.config/zsh/aliases.zsh` | Portable aliases | `~/dotfiles/.config/zsh/aliases.zsh` |
-| Functions | `~/.config/zsh/functions.zsh` | Custom functions | `~/dotfiles/.config/zsh/functions.zsh` |
+| Aliases | `~/.config/zsh/80-aliases.zsh` | Portable aliases | `~/dotfiles/.config/zsh/80-aliases.zsh` |
+| Functions | `~/.config/zsh/85-functions.zsh` | Custom functions | `~/dotfiles/.config/zsh/85-functions.zsh` |
 | **Local config** | `~/.config/zsh/99-local.zsh` | Machine-specific | `~/.config/zsh/99-local.zsh` ⚠️ (LOCAL ONLY, NOT IN REPO) |
 | Environment | `~/.zshenv` | Global env setup | `~/dotfiles/.zshenv` |
 
@@ -73,7 +73,7 @@ nano ~/dotfiles/.config/zsh/aliases.zsh
 
 ```bash
 # One-command setup — setup.sh handles all symlinks automatically
-git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
+git clone --recursive git@github.com:Pontuzz/dotfiles.git ~/dotfiles
 ~/dotfiles/setup.sh
 ```
 
@@ -83,7 +83,7 @@ After setup.sh completes, all symlinks are in place. Jump to Workflow 1 for day-
 
 ```bash
 # 1. Edit file in repo
-nano ~/dotfiles/.config/zsh/aliases.zsh
+nano ~/dotfiles/.config/zsh/80-aliases.zsh
 
 # 2. Reload shell to apply changes
 source ~/.zshrc
@@ -92,7 +92,7 @@ source ~/.zshrc
 alias | grep myalias
 
 # 4. When satisfied, push to GitHub
-cd ~/dotfiles && git add .config/zsh/aliases.zsh && git commit -m "Add alias" && git push
+cd ~/dotfiles && git add .config/zsh/80-aliases.zsh && git commit -m "Add alias" && git push
 ```
 
 ### Workflow 2: Machine-Specific Settings
@@ -118,7 +118,7 @@ cd ~/dotfiles && git status  # Should NOT show 99-local.zsh
 ```bash
 # On Machine A (original)
 cd ~/dotfiles
-git add .config/zsh/aliases.zsh
+git add .config/zsh/80-aliases.zsh
 git commit -m "Add new alias"
 git push
 
@@ -151,13 +151,13 @@ Git doesn't care about symlinks—it tracks the **real files**:
 cd ~/dotfiles
 
 # Git sees changes to real files
-git diff .config/zsh/aliases.zsh      # Shows what changed
+git diff .config/zsh/80-aliases.zsh      # Shows what changed
 
 # Git doesn't track symlinks themselves
-ls -l ~/.config/zsh/aliases.zsh       # Is a symlink, but git doesn't care
+ls -l ~/.config/zsh/80-aliases.zsh       # Is a symlink, but git doesn't care
 
 # Push repo changes
-git add .config/zsh/aliases.zsh
+git add .config/zsh/80-aliases.zsh
 git commit -m "Update aliases"
 git push
 ```
@@ -184,20 +184,20 @@ exec zsh
 ```bash
 # It's fine! The file was edited in the repo anyway
 # Check the real location
-cat ~/dotfiles/.config/zsh/aliases.zsh
+cat ~/dotfiles/.config/zsh/80-aliases.zsh
 ```
 
 ### "I want to know if I changed something"
 ```bash
 cd ~/dotfiles
 git status                    # Shows all changes
-git diff .config/zsh/aliases.zsh      # Shows exact changes
+git diff .config/zsh/80-aliases.zsh      # Shows exact changes
 ```
 
 ### "How do I verify the symlink is correct?"
 ```bash
 ls -l ~/.config/zsh
-# Should show: ~/.config/zsh -> ~/dotfiles/.config/zsh
+# Should show: /home/pontuzz/.config/zsh -> /home/pontuzz/dotfiles/.config/zsh
 
 # If not, recreate it:
 rm ~/.config/zsh

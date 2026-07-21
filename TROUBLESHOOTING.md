@@ -35,7 +35,7 @@ zsh -x ~/.zshrc 2>&1 | head -20
 # This usually means you need to install Powerlevel10k fonts
 # Download from: https://github.com/romkatv/powerlevel10k#fonts
 
-# Or temporarily disable Powerlevel10k in 00-init-early.zsh
+# Or temporarily disable Powerlevel10k in 20-init-early.zsh
 ```
 
 ## Tools Not Initializing (fzf, brew, zoxide, etc.)
@@ -118,7 +118,7 @@ git push
 
 ```bash
 # Check what platform was detected
-zsh -c "source ~/.config/zsh/20-machine-detect.zsh && \
+zsh -c "source ~/.config/zsh/10-machine-detect.zsh && \
   echo 'IS_WSL='\$IS_WSL' IS_ARM='\$IS_ARM' MACHINE_TYPE='\$MACHINE_TYPE"
 ```
 

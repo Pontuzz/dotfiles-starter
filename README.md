@@ -28,15 +28,17 @@ dotfiles/
 ├── .profile                         # Login shell
 │
 ├── .config/zsh/                     # Primary zsh configuration
-│   ├── .zshrc                       #   Sources in order + health checks + tools check
+│   ├── .zshrc                       #   Orchestrator: sources 10 modules in order
 │   ├── .p10k.zsh                    #   Powerlevel10k prompt
-│   ├── 00-init-early.zsh            #   MOTD, Zellij, instant prompt
-│   ├── 20-machine-detect.zsh        #   Platform flags (IS_WSL, IS_LINUX, MACHINE_TYPE, etc.)
-│   ├── plugins.zsh                  #   OMZ + 5 external + 2 custom plugins, completions
+│   ├── 10-machine-detect.zsh        #   Platform flags (IS_WSL, IS_LINUX, MACHINE_TYPE, etc.)
+│   ├── 20-init-early.zsh            #   MOTD, Zellij, instant prompt
+│   ├── 30-plugins.zsh               #   OMZ + 5 external + 2 custom plugins, completions
 │   ├── 40-env.zsh                   #   EDITOR, NVM_DIR, WSL PATH filter
 │   ├── 50-tools.zsh                 #   brew, zoxide, atuin, thefuck, fzf, fnm
-│   ├── aliases.zsh                  #   40+ aliases (lsd/eza/cd guarded)
-│   ├── functions.zsh                #   Helper functions
+│   ├── 55-diagnostics.zsh           #   Health checks, tool verification, zcompdump rotation
+│   ├── 57-integrations.zsh          #   Warp terminal hook, git hooks auto-config
+│   ├── 80-aliases.zsh               #   40+ aliases (lsd/eza/cd guarded)
+│   ├── 85-functions.zsh             #   [STUB] Portable helpers (machine-specific in 99-local)
 │   ├── 99-local.zsh                 #   [GITIGNORED] Machine override
 │   └── 99-local.zsh.example         #   Template
 │
@@ -50,7 +52,7 @@ dotfiles/
 ### Sourcing Order
 
 ```
-.zshrc → 20-machine-detect → 00-init-early → plugins.zsh → 40-env → 50-tools → aliases → functions → 99-local
+.zshrc → 10-machine-detect → 20-init-early → 30-plugins → 40-env → 50-tools → 55-diagnostics → 57-integrations → 80-aliases → 85-functions → 99-local
 ```
 
 Each file handles one concern — platform detection, plugins, env vars, tool init, aliases, functions. Machine overrides in `99-local.zsh` (gitignored, sourced last).
@@ -114,5 +116,6 @@ exec zsh
 ---
 
 **License:** MIT  
-**Tested on:** WSL2 (Ubuntu), Debian 13, Raspberry Pi OS, Arch, Fedora  
-**Last updated:** July 20, 2026
+**Tested on:** WSL2 (Ubuntu), Debian 13, Raspberry Pi OS  
+**setup.sh supports:** Arch (pacman), Fedora (dnf), Alpine (apk), macOS (brew) — untested  
+**Last updated:** July 21, 2026

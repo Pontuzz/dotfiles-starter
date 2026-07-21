@@ -100,9 +100,24 @@ fi
 # ============================================================================
 # Machine-Specific Function Overrides
 # ============================================================================
-# Example function override for specific machine needs:
-# custom_function() {
-#   echo "Machine-specific implementation"
+# Example: Docker remote deployment function for infrastructure
+# typeset -A CONTAINERS=(
+#   ["service-a"]="user@host:/path/to/compose.yaml"
+#   ["service-b"]="user@host:/path/to/compose.yaml"
+# )
+# deploy-service() {
+#   local container="$1"
+#   if [[ "$container" == "--list" || -z "$container" ]]; then
+#     echo "Available containers:"
+#     for key in ${(k)CONTAINERS[@]}; do echo "  $key"; done
+#     return 0
+#   fi
+#   local host_path="${CONTAINERS[$container]}"
+#   [[ -z "$host_path" ]] && echo "Unknown container" && return 1
+#   local user_host="${host_path%:*}"
+#   local remote_path="${host_path#*:}"
+#   ssh -i ~/.ssh/id_ed25519 "$user_host" \
+#     "docker compose -f $remote_path pull && docker compose -f $remote_path up -d"
 # }
 
 # ============================================================================

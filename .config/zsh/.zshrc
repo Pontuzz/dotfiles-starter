@@ -1,50 +1,56 @@
 #!/usr/bin/env zsh
 
 # ============================================================================
-# Modular Zsh Configuration
+# Modular Zsh Configuration — Orchestrator
 # ============================================================================
-# This file sources split config files in a specific order for proper
-# initialization, especially important for prompt and tool loading.
-# Designed to be portable across WSL, Linux, macOS, and Raspberry Pi.
+# Sources split config files in a specific order.
+# Portable across WSL, Linux, macOS, and Raspberry Pi.
 # ============================================================================
 
-# Startup timer — must be the very first thing to get accurate measurement
+# Startup timer — must be first for accurate measurement
 zmodload zsh/datetime 2>/dev/null
 typeset _dotfiles_start=$EPOCHREALTIME
 
-# 0. Machine detection (platform and hostname-based flags)
-[ -f "$ZDOTDIR/20-machine-detect.zsh" ] && source "$ZDOTDIR/20-machine-detect.zsh"
+# ── Configuration Modules ─────────────────────────────────────────────────────
+# Each file handles one concern. Guarded with -f so missing files are silent.
 
-# 1. Early initialization (instant prompt, keychain, zellij)
-# Must run early but after machine detection
-[ -f "$ZDOTDIR/00-init-early.zsh" ] && source "$ZDOTDIR/00-init-early.zsh"
+# 0. Platform detection (sets IS_WSL, IS_LINUX, MACHINE_TYPE, etc.)
+[ -f "$ZDOTDIR/10-machine-detect.zsh" ] && source "$ZDOTDIR/10-machine-detect.zsh"
+
+# 1. Early init (MOTD, Zellij auto-start, p10k instant prompt)
+[ -f "$ZDOTDIR/20-init-early.zsh" ] && source "$ZDOTDIR/20-init-early.zsh"
 
 # 2. Oh My Zsh and plugin loading
-[ -f "$ZDOTDIR/plugins.zsh" ] && source "$ZDOTDIR/plugins.zsh"
+[ -f "$ZDOTDIR/30-plugins.zsh" ] && source "$ZDOTDIR/30-plugins.zsh"
 
 # 3. Environment variables
 [ -f "$ZDOTDIR/40-env.zsh" ] && source "$ZDOTDIR/40-env.zsh"
 
-# 4. Tool initializations (brew, zoxide, fzf, atuin, etc.)
+# 4. Tool initializations (brew, zoxide, fzf, atuin, navi, thefuck, fnm)
 [ -f "$ZDOTDIR/50-tools.zsh" ] && source "$ZDOTDIR/50-tools.zsh"
 
-# 5. Aliases (extracted from my-alias plugin)
-[ -f "$ZDOTDIR/aliases.zsh" ] && source "$ZDOTDIR/aliases.zsh"
+# 5. Diagnostics — health checks, tool verification, cache maintenance
+[ -f "$ZDOTDIR/55-diagnostics.zsh" ] && source "$ZDOTDIR/55-diagnostics.zsh"
 
-# 6. Functions and additional setup
-[ -f "$ZDOTDIR/functions.zsh" ] && source "$ZDOTDIR/functions.zsh"
+# 6. Optional integrations (Warp, git hooks, keychain)
+[ -f "$ZDOTDIR/57-integrations.zsh" ] && source "$ZDOTDIR/57-integrations.zsh"
 
-# 7. Machine-specific or secret settings (should be gitignored)
+# 7. Aliases
+[ -f "$ZDOTDIR/80-aliases.zsh" ] && source "$ZDOTDIR/80-aliases.zsh"
+
+# 8. Functions (portable helpers)
+[ -f "$ZDOTDIR/85-functions.zsh" ] && source "$ZDOTDIR/85-functions.zsh"
+
+# 9. Machine-specific override (gitignored — secrets, infra, local settings)
 [ -f "$ZDOTDIR/99-local.zsh" ] && source "$ZDOTDIR/99-local.zsh"
 
-# ============================================================================
-# Core settings (kept here for visibility)
-# ============================================================================
+# ── Core Settings ─────────────────────────────────────────────────────────────
 
-# History settings - optimized for performance
+# History — XDG-compliant, deduplicated, shared across shells
 HISTSIZE=50000
 SAVEHIST=50000
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/history/zsh/.zsh_history"
+[[ ! -d "$(dirname "$HISTFILE")" ]] && mkdir -p "$(dirname "$HISTFILE")"
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_ALL_DUPS
@@ -56,7 +62,7 @@ setopt HIST_VERIFY
 setopt SHARE_HISTORY
 setopt EXTENDED_HISTORY
 
-# Performance options
+# Performance and behavior
 setopt NO_BEEP
 setopt AUTO_CD
 setopt GLOB_COMPLETE
@@ -68,198 +74,19 @@ setopt AUTO_PARAM_SLASH
 setopt COMPLETE_IN_WORD
 setopt ALWAYS_TO_END
 
-# ============================================================================
-# SSH and additional setup
-# ============================================================================
-
-# Source keychain for SSH agent management
+# SSH agent via keychain
 [[ -f ~/.keychain/$HOST-sh ]] && source ~/.keychain/$HOST-sh
 
-# Powerlevel10k prompt configuration
+# Powerlevel10k prompt
 [[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh
-
-# ============================================================================
-# Optional integrations (guard with existence checks)
-# ============================================================================
-
-
-# WARP shell integration (WSL/Windows Terminal only)
-if [[ -n "$WT_SESSION" ]]; then
-  printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh"}}\x9c'
-fi
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
 
-# ============================================================================
-# Git hooks — auto-configure shared hooks for dotfiles repo
-# Ensures submodules stay in sync after git pull on any machine
-# Uses a stamp file so this runs exactly once — subsequent starts are instant
-# ============================================================================
-if [[ -d "$DOTFILES/.git" ]]; then
-  local _stamp="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/.dotfiles_hooks_stamp"
-  if [[ ! -f "$_stamp" ]]; then
-    git -C "$DOTFILES" config core.hooksPath "$DOTFILES/hooks"
-    mkdir -p "$(dirname "$_stamp")"
-    touch "$_stamp"
-  fi
-  unset _stamp
-fi
-
-# ============================================================================
-# Symlink health check — warns if critical dotfiles symlinks are missing/broken
-# Silent when healthy; only prints actionable messages on problems
-# ============================================================================
-_dotfiles_check_links() {
-  local _issues=0
-
-  # ~/.config/zsh must point to the repo's zsh config
-  if [[ ! -L "$HOME/.config/zsh" ]]; then
-    echo "⚠️  ~/.config/zsh is not a symlink (expected → $DOTFILES/.config/zsh)"
-    echo "   Fix: ln -sf $DOTFILES/.config/zsh ~/.config/zsh"
-    (( _issues++ ))
-  elif [[ ! -e "$HOME/.config/zsh" ]]; then
-    echo "⚠️  ~/.config/zsh symlink is broken — target missing"
-    echo "   Fix: ln -sf $DOTFILES/.config/zsh ~/.config/zsh"
-    (( _issues++ ))
-  fi
-
-  # ~/.bashrc should point to the repo's bashrc (optional if bash isn't used)
-  if [[ ! -L "$HOME/.bashrc" ]]; then
-    echo "⚠️  ~/.bashrc is not a symlink (expected → $DOTFILES/.bashrc)"
-    echo "   Fix: ln -sf $DOTFILES/.bashrc ~/.bashrc"
-    (( _issues++ ))
-  elif [[ ! -e "$HOME/.bashrc" ]]; then
-    echo "⚠️  ~/.bashrc symlink is broken"
-    echo "   Fix: ln -sf $DOTFILES/.bashrc ~/.bashrc"
-    (( _issues++ ))
-  fi
-
-  # ~/.zshenv must exist (symlink or regular file — both are valid)
-  if [[ ! -f "$HOME/.zshenv" ]]; then
-    echo "⚠️  ~/.zshenv is missing — dotfiles env won't load"
-    echo "   Fix: ln -s $DOTFILES/.zshenv ~/.zshenv (or copy it)"
-    (( _issues++ ))
-  fi
-
-  # Dotfiles repo itself
-  if [[ ! -d "$DOTFILES/.git" ]]; then
-    echo "⚠️  Dotfiles repo not found at $DOTFILES"
-    echo "   Fix: git clone git@github.com:[user]/dotfiles.git $DOTFILES"
-    (( _issues++ ))
-  fi
-
-  if (( _issues > 0 )); then
-    echo "🔧 $_issues dotfiles issue(s) found — see above"
-  fi
-}
-_dotfiles_check_links
-
-# ============================================================================
-# Zcompdump rotation — prunes stale completion cache files
-# Runs at most once per day to avoid slowdown on every shell start
-# ============================================================================
-_zcompdump_rotate() {
-  local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-  local stamp_file="$cache_dir/.zcompdump_rotate_stamp"
-  local today="${(%):-%D{%Y%m%d}}"
-
-  # Only run once per day
-  if [[ -f "$stamp_file" ]]; then
-    local last_run
-    last_run=$(<"$stamp_file")
-    [[ "$last_run" == "$today" ]] && return
-  fi
-
-  # Prune all but the newest .zcompdump in the cache dir
-  local -a dumps
-  dumps=("$cache_dir"/.zcompdump*(N.om))
-  if (( ${#dumps} > 1 )); then
-    rm -f "${dumps[@]:1}"
-  fi
-
-  # Also clean any stray dumps left in ZDOTDIR (legacy location)
-  dumps=("$ZDOTDIR"/.zcompdump*(N.om))
-  if (( ${#dumps} > 1 )); then
-    rm -f "${dumps[@]:1}"
-  fi
-
-  # Ensure cache directory exists, then update stamp
-  mkdir -p "$cache_dir"
-  print -r -- "$today" >| "$stamp_file"
-}
-_zcompdump_rotate
-
-# ============================================================================
-# Startup time guard — warns if shell initialization takes too long
-# Threshold: 3 seconds. Silent when healthy.
-# ============================================================================
+# ── Startup Timer Guard ───────────────────────────────────────────────────────
+# Warns if total shell init exceeds 3 seconds. Silent when healthy.
 local _elapsed=$(( EPOCHREALTIME - _dotfiles_start ))
 if (( _elapsed > 3.0 )); then
   printf "⚠️  Shell startup took %.1fs — check for slow plugins or tools\n" $_elapsed
 fi
 unset _dotfiles_start
-
-# ============================================================================
-# Tool availability check — lists expected tools that aren't installed
-# Runs at most once per day. Silent when all tools are present.
-# ============================================================================
-_dotfiles_check_tools() {
-  local _cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-  local _stamp="$_cache/.tool_check_stamp"
-  local _today="${(%):-%D{%Y%m%d}}"
-
-  # Only run once per day
-  if [[ -f "$_stamp" ]]; then
-    local _last; _last=$(<"$_stamp")
-    [[ "$_last" == "$_today" ]] && return
-  fi
-
-  local -a _missing
-  local _tool
-
-  # Build ignore list from DOTFILES_IGNORE_MISSING_TOOLS (set in 99-local.zsh)
-  # Space-separated tool names that you know are missing and don't want reminded about
-  local -a _ignore
-  if [[ -n "$DOTFILES_IGNORE_MISSING_TOOLS" ]]; then
-    _ignore=(${(s: :)DOTFILES_IGNORE_MISSING_TOOLS})
-  fi
-
-  # Tools that the dotfiles config wraps or aliases
-  # Note: binary name may differ from package name (e.g. 'rg' is from 'ripgrep')
-  for _tool in fzf zoxide bat lsd eza rg thefuck navi; do
-    if ! command -v "$_tool" >/dev/null 2>&1; then
-      # Skip if user has explicitly ignored this tool
-      if (( ${_ignore[(Ie)$_tool]} )); then
-        continue
-      fi
-      _missing+=("$_tool")
-    fi
-  done
-
-  if (( ${#_missing} > 0 )); then
-    # Map binary names to package/display names for accurate install hints
-    local -A _pkg_names
-    _pkg_names=(
-      rg        ripgrep
-      fzf       fzf
-      zoxide    zoxide
-      bat       bat
-      lsd       lsd
-      eza       eza
-      thefuck   thefuck
-      navi      navi
-    )
-    local -a _display
-    for _tool in "${_missing[@]}"; do
-      _display+=("${_pkg_names[$_tool]:-$_tool}")
-    done
-    echo "💡 Optional tools not found: ${(j:, :)_display}"
-    echo "   Install: brew install ${_display[*]}"
-    echo "   (or use apt/pacman — see each tool's docs)"
-  fi
-
-  mkdir -p "$_cache"
-  print -r -- "$_today" >| "$_stamp"
-}
-_dotfiles_check_tools

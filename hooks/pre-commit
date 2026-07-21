@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Pre-commit hook — validates shell syntax before committing
+# Runs zsh -n on staged .zsh files and bash -n on staged .bash files.
+# Aborts the commit if any syntax errors are found.
+#
+# Installed via git config core.hooksPath hooks/
+
+set -euo pipefail
+
+errors=0
+
+# ── Zsh syntax check ──────────────────────────────────────────────────────────
+while IFS= read -r file; do
+  # Use zsh -n (syntax check only, no execution)
+  if ! zsh -n "$file" 2>&1; then
+    echo "❌ zsh syntax error in: $file"
+    ((errors++))
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(zsh|zshrc)$' || true)
+
+# ── Bash syntax check ─────────────────────────────────────────────────────────
+while IFS= read -r file; do
+  if ! bash -n "$file" 2>&1; then
+    echo "❌ bash syntax error in: $file"
+    ((errors++))
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.bash$' || true)
+
+# ── Report ────────────────────────────────────────────────────────────────────
+if (( errors > 0 )); then
+  echo ""
+  echo "🔴 $errors syntax error(s) found — commit aborted."
+  echo "   Fix the errors above, then try again."
+  exit 1
+fi

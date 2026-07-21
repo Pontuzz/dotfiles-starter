@@ -132,6 +132,10 @@ setup_repo() {
     # Init/update submodules (oh-my-zsh plugins + p10k)
     info "Updating submodules..."
     git -C "$REPO_PATH" submodule update --init --recursive 2>/dev/null && ok "Submodules initialized" || warn "Submodule init failed (git may be outdated)"
+
+    # Configure hooks path for pre-commit validation
+    git -C "$REPO_PATH" config core.hooksPath hooks/
+    ok "Git hooks configured (hooks/)"
 }
 
 # ─── 2. Install Shell & Dependencies ──────────────────────────────────────

@@ -25,13 +25,13 @@ This dotfiles repository uses a **clear separation between portable and personal
 ```
 .config/zsh/
 ├── .zshrc                    # Main config hub (sources everything)
-├── 00-init-early.zsh         # Early initialization (instant prompt, keychain)
-├── 20-machine-detect.zsh     # Platform detection flags
-├── plugins.zsh               # Plugin configuration
+├── 20-init-early.zsh         # Early initialization (instant prompt, keychain)
+├── 10-machine-detect.zsh     # Platform detection flags
+├── 30-plugins.zsh               # Plugin configuration
 ├── 40-env.zsh                # Environment variables (portable)
 ├── 50-tools.zsh              # Tool initialization (fzf, zoxide, atuin, etc.)
-├── aliases.zsh               # Portable aliases (ll, la, grep, etc.)
-├── functions.zsh             # Custom helper functions
+├── 80-aliases.zsh               # Portable aliases (ll, la, grep, etc.)
+├── 85-functions.zsh             # Custom helper functions
 ├── .p10k.zsh                 # Powerlevel10k theme config
 ├── 99-local.zsh.example      # TEMPLATE: Shows what goes in personal config
 └── custom/plugins/
@@ -61,13 +61,13 @@ When you start a zsh session:
 
 ```
 1. .zshrc                  # Sources all modular files
-   ├── 20-machine-detect.zsh   # Sets: IS_RASPBERRY_PI, MACHINE_TYPE, etc.
-   ├── 00-init-early.zsh       # Early setup (instant prompt, keychain)
-   ├── plugins.zsh             # Loads Oh My Zsh + plugins
+   ├── 10-machine-detect.zsh   # Sets: IS_RASPBERRY_PI, MACHINE_TYPE, etc.
+   ├── 20-init-early.zsh       # Early setup (instant prompt, keychain)
+   ├── 30-plugins.zsh             # Loads Oh My Zsh + plugins
    ├── 40-env.zsh              # Portable environment variables
    ├── 50-tools.zsh            # Tool initialization (brew, zoxide, fzf)
-   ├── aliases.zsh             # Portable aliases
-   ├── functions.zsh           # Portable functions
+   ├── 80-aliases.zsh             # Portable aliases
+   ├── 85-functions.zsh           # Portable functions
    ├── 99-local.zsh            # [YOUR MACHINE CONFIG - if exists]
    │   ├── Machine-specific aliases (work tools, local services, etc.)
    │   ├── Local environment setup
@@ -82,7 +82,7 @@ When you start a zsh session:
 
 ### ✅ Portable Configuration (track in git)
 
-**`aliases.zsh` - Cross-platform aliases:**
+**`80-aliases.zsh` - Cross-platform aliases:**
 ```bash
 alias ll='ls -lh'
 alias la='ls -A'
@@ -91,7 +91,7 @@ alias grep='grep --exclude-dir={.git,.vscode}'
 alias please=sudo
 ```
 
-**`functions.zsh` - Helper functions:**
+**`85-functions.zsh` - Helper functions:**
 ```bash
 # Extract any archive
 extract() {
@@ -194,10 +194,10 @@ Only put machine-specific config in `99-local.zsh` and `.local/`. Everything els
 ### 3. **Clear Separation**
 Comments in portable files indicate what goes where:
 ```bash
-# In aliases.zsh (portable):
+# In 80-aliases.zsh (portable):
 # Personal service aliases belong in ~/.config/zsh/99-local.zsh
 
-# In aliases.zsh (portable):
+# In 80-aliases.zsh (portable):
 # Note: Infrastructure aliases are in 99-local.zsh (not tracked)
 ```
 
@@ -224,7 +224,7 @@ fi
 
 ### Adding Portable Features
 When adding something that should work on all machines:
-1. Add to appropriate tracked file (`aliases.zsh`, `functions.zsh`, etc.)
+1. Add to appropriate tracked file (`80-aliases.zsh`, `85-functions.zsh`, etc.)
 2. Test on multiple platforms if possible
 3. Use `command -v` checks for optional tools
 4. Add platform detection if machine-specific
@@ -240,7 +240,7 @@ When adding machine-specific functionality:
 ```bash
 # On machine with changes
 cd ~/dotfiles
-git add .config/zsh/aliases.zsh  # Only portable changes
+git add .config/zsh/80-aliases.zsh  # Only portable changes
 git commit -m "Update portable aliases"
 git push
 
@@ -257,13 +257,13 @@ exec zsh  # Reload
 | File | Purpose | Scope | Track? |
 |------|---------|-------|--------|
 | `.zshrc` | Config hub, sources everything | All machines | ✅ |
-| `00-init-early.zsh` | Early initialization | All machines | ✅ |
-| `20-machine-detect.zsh` | Platform/hostname detection | All machines | ✅ |
-| `plugins.zsh` | Plugin loading | All machines | ✅ |
+| `20-init-early.zsh` | Early initialization | All machines | ✅ |
+| `10-machine-detect.zsh` | Platform/hostname detection | All machines | ✅ |
+| `30-plugins.zsh` | Plugin loading | All machines | ✅ |
 | `40-env.zsh` | Standard environment variables | All machines | ✅ |
 | `50-tools.zsh` | Tool initialization | All machines | ✅ |
-| `aliases.zsh` | Portable aliases | All machines | ✅ |
-| `functions.zsh` | Portable functions | All machines | ✅ |
+| `80-aliases.zsh` | Portable aliases | All machines | ✅ |
+| `85-functions.zsh` | Portable functions | All machines | ✅ |
 | `99-local.zsh.example` | Template for personal setup | Example/template | ✅ |
 | `99-local.zsh` | Personal machine setup | This machine only | ❌ |
 | `.local/` | Personal overrides | This machine only | ❌ |
@@ -281,7 +281,7 @@ Check that `99-local.zsh` exists and is sourced:
 ### Portable aliases conflicting with personal
 Keep personal versions in `99-local.zsh` (loaded after portable config):
 ```bash
-# Portable (in aliases.zsh)
+# Portable (in 80-aliases.zsh)
 alias myalias='command1'
 
 # Personal override (in 99-local.zsh)

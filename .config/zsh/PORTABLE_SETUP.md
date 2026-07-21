@@ -64,13 +64,13 @@ nano ~/.config/motd/20-custom.sh
 ├── .zshrc                    # Main config file (sources everything else in order)
 ├── .p10k.zsh                 # Powerlevel10k prompt config
 ├── .oh-my-zsh/               # Oh My Zsh installation (submodule)
-├── 00-init-early.zsh         # Early init (instant prompt, zellij, keychain)
-├── 20-machine-detect.zsh     # Platform detection (WSL, Linux, macOS, ARM, Pi)
-├── plugins.zsh               # Oh My Zsh plugins and completion setup
+├── 20-init-early.zsh         # Early init (instant prompt, zellij, keychain)
+├── 10-machine-detect.zsh     # Platform detection (WSL, Linux, macOS, ARM, Pi)
+├── 30-plugins.zsh               # Oh My Zsh plugins and completion setup
 ├── 40-env.zsh                # Environment variables
 ├── 50-tools.zsh              # Tool initializations (brew, zoxide, fzf, etc.)
-├── aliases.zsh               # Portable aliases (cross-platform)
-├── functions.zsh             # Custom functions and helpers
+├── 80-aliases.zsh               # Portable aliases (cross-platform)
+├── 85-functions.zsh             # Custom functions and helpers
 ├── 99-local.zsh              # Machine-specific config (GITIGNORED - copy from .example)
 ├── 99-local.zsh.example      # Template for machine-specific config
 └── custom/                   # Custom plugins and themes
@@ -88,7 +88,7 @@ nano ~/.config/motd/20-custom.sh
 
 ## Platform Detection
 
-The config automatically detects your platform and sets environment flags in `20-machine-detect.zsh`:
+The config automatically detects your platform and sets environment flags in `10-machine-detect.zsh`:
 
 ```bash
 # OS/Architecture Detection
@@ -144,7 +144,7 @@ alias myrepo='cd /path/to/my/repo'
 ## Portable Features
 
 ✅ **Works everywhere:**
-- Aliases (portable ones in `aliases.zsh`)
+- Aliases (portable ones in `80-aliases.zsh`)
 - Oh My Zsh plugins
 - Powerlevel10k theme (needs font installation on each machine)
 - FZF, Zoxide, Atuin integrations
@@ -190,13 +190,13 @@ exec zsh 2>&1 | head -20
 # Download and install from: https://github.com/romkatv/powerlevel10k#fonts
 # After installing, your prompt should look correct
 
-# Or temporarily disable Powerlevel10k in 00-init-early.zsh
+# Or temporarily disable Powerlevel10k in 20-init-early.zsh
 ```
 
 ### Platform detection not working correctly
 ```bash
 # Check what platform was detected
-zsh -c "source ~/.config/zsh/20-machine-detect.zsh && \
+zsh -c "source ~/.config/zsh/10-machine-detect.zsh && \
   echo 'WSL='$IS_WSL' LINUX='$IS_LINUX' MACOS='$IS_MACOS' ARM='$IS_ARM' MACHINE='$MACHINE_TYPE"
 ```
 
@@ -264,4 +264,4 @@ After `setup.sh` completes, do these once per machine:
 - Use `99-local.zsh.example` as a template
 - All tool initializations check for `command -v` before use — missing tools won't break anything
 - Configuration is modular: remove files you don't need
-- History is shared across all shells (SHARE_HISTORY option in plugins.zsh)
+- History is shared across all shells (SHARE_HISTORY option in 30-plugins.zsh)

@@ -46,7 +46,7 @@ This dotfiles repository uses a **clear separation between portable and personal
 ├── 99-local.zsh              # YOUR MACHINE: Machine-specific config (GITIGNORED)
 │
 ├── .local/                    # Optional: Personal function overrides
-│   ├── aliases-services.zsh  # Service aliases (hivedrop, avdump, etc.)
+│   ├── aliases-services.zsh  # Service aliases (machine-specific)
 │   ├── functions-personal.zsh # Personal function implementations
 │   └── env-local.zsh         # Local environment variables
 │
@@ -152,7 +152,7 @@ my_deploy() {
 ```bash
 # Internal service aliases
 alias myservice='ssh myservice.internal'
-alias internaldb='mysql -h 192.168.1.10 -u admin'
+alias internaldb='mysql -h [your-internal-ip] -u admin'
 
 # Service-specific helper
 connect_to_work() {

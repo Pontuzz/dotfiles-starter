@@ -73,7 +73,7 @@ nano ~/dotfiles/.config/zsh/80-aliases.zsh
 
 ```bash
 # One-command setup — setup.sh handles all symlinks automatically
-git clone --recursive git@github.com:Pontuzz/dotfiles.git ~/dotfiles
+git clone --recursive git@github.com:Pontuzz/dotfiles-starter.git ~/dotfiles
 ~/dotfiles/setup.sh
 ```
 
@@ -197,7 +197,7 @@ git diff .config/zsh/80-aliases.zsh      # Shows exact changes
 ### "How do I verify the symlink is correct?"
 ```bash
 ls -l ~/.config/zsh
-# Should show: /home/pontuzz/.config/zsh -> /home/pontuzz/dotfiles/.config/zsh
+# Should show: ~/.config/zsh -> ~/dotfiles/.config/zsh
 
 # If not, recreate it:
 rm ~/.config/zsh

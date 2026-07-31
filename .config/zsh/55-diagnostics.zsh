@@ -41,7 +41,7 @@ _dotfiles_check_links() {
   # Dotfiles repo itself
   if [[ ! -d "$DOTFILES/.git" ]]; then
     echo "⚠️  Dotfiles repo not found at $DOTFILES"
-    echo "   Fix: git clone git@github.com:Pontuzz/dotfiles.git $DOTFILES"
+    echo "   Fix: git clone git@github.com:Pontuzz/dotfiles-starter.git $DOTFILES"
     (( _issues++ ))
   fi
 

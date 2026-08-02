@@ -206,7 +206,6 @@ zsh -c "source ~/.config/zsh/10-machine-detect.zsh && \
 command -v fzf       # Check fzf
 command -v zoxide    # Check zoxide
 command -v brew      # Check brew
-command -v atuin     # Check atuin
 
 # If not found, install it:
 # - Ubuntu/Debian: sudo apt install <package>

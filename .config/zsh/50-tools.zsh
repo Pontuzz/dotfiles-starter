@@ -15,11 +15,6 @@ if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
 fi
 
-# Atuin (history search) - optional, won't break if missing
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh)"
-fi
-
 # Navi (interactive cheatsheet) - lightweight and optional
 if command -v navi >/dev/null 2>&1; then
   eval "$(navi widget zsh)"

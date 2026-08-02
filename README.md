@@ -34,7 +34,7 @@ dotfiles/
 │   ├── 20-init-early.zsh            #   MOTD, Zellij, instant prompt
 │   ├── 30-plugins.zsh               #   OMZ + 5 external + 2 custom plugins, completions
 │   ├── 40-env.zsh                   #   EDITOR, NVM_DIR, WSL PATH filter
-│   ├── 50-tools.zsh                 #   brew, zoxide, atuin, thefuck, fzf, fnm
+│   ├── 50-tools.zsh                 #   brew, zoxide, thefuck, fzf, fnm
 │   ├── 55-diagnostics.zsh           #   Health checks, tool verification, zcompdump rotation
 │   ├── 57-integrations.zsh          #   Warp terminal hook, git hooks auto-config
 │   ├── 80-aliases.zsh               #   40+ aliases (lsd/eza/cd guarded)
@@ -104,7 +104,7 @@ Clone with `--recursive`. Post-merge hook auto-inits on `git pull`.
 | [SYMLINK_WORKFLOW.md](.config/zsh/SYMLINK_WORKFLOW.md) | Editing workflow, symlink mechanics |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Auth, slow startup, submodule issues |
 
-**Dependencies:** Required — zsh, git. Optional (config survives without) — fzf, zoxide, bat, ripgrep, lsd, eza, atuin, thefuck, navi, brew, keychain, jq. All tool integrations use `command -v` guards.
+**Dependencies:** Required — zsh, git. Optional (config survives without) — fzf, zoxide, bat, ripgrep, lsd, eza, thefuck, navi, brew, keychain, jq. All tool integrations use `command -v` guards.
 
 ## Updating
 

@@ -26,7 +26,7 @@ typeset _dotfiles_start=$EPOCHREALTIME
 # 3. Environment variables
 [ -f "$ZDOTDIR/40-env.zsh" ] && source "$ZDOTDIR/40-env.zsh"
 
-# 4. Tool initializations (brew, zoxide, fzf, atuin, navi, thefuck, fnm)
+# 4. Tool initializations (brew, zoxide, fzf, navi, thefuck, fnm)
 [ -f "$ZDOTDIR/50-tools.zsh" ] && source "$ZDOTDIR/50-tools.zsh"
 
 # 5. Diagnostics — health checks, tool verification, cache maintenance

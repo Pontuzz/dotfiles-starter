@@ -27,9 +27,6 @@ if [ -d "$HOME/.local/bin" ] ; then
 fi
 
 # Note: Runtimes guarded for multi-machine compatibility
-if [ -f "$HOME/.atuin/bin/env" ]; then
-    . "$HOME/.atuin/bin/env"
-fi
 if [ -f "$HOME/.cargo/env" ]; then
     . "$HOME/.cargo/env"
 fi

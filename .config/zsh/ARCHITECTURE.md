@@ -29,7 +29,7 @@ This dotfiles repository uses a **clear separation between portable and personal
 ├── 10-machine-detect.zsh     # Platform detection flags
 ├── 30-plugins.zsh               # Plugin configuration
 ├── 40-env.zsh                # Environment variables (portable)
-├── 50-tools.zsh              # Tool initialization (fzf, zoxide, atuin, etc.)
+├── 50-tools.zsh              # Tool initialization (fzf, zoxide, etc.)
 ├── 80-aliases.zsh               # Portable aliases (ll, la, grep, etc.)
 ├── 85-functions.zsh             # Custom helper functions
 ├── .p10k.zsh                 # Powerlevel10k theme config
